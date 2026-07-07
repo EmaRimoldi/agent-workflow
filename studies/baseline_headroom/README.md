@@ -4,31 +4,33 @@
 **Period**: April 14, 2026
 **Objective**: Find a healthy but non-trivial AutoResearch baseline before running the reviewer-grade BP 2x2.
 
-## Study Rhythm
+## Short Version
 
-**Question**: Can we pick an AutoResearch baseline that agents can improve in
-several distinct ways, without making the task so weak that almost every edit
-wins?
+**Question**: Which starting `train.py` should agents optimize?
 
-**What was actually run**: 161 controlled evaluator runs. These were
-non-agentic: no Claude Code agent chose actions, used memory, or coordinated
-with other agents. A script applied predefined baseline/edit configurations to
-`autoresearch/train.py`, ran the fixed-step evaluator, and recorded `val_bpb`.
+**What was run**: 161 controlled evaluator runs. These were non-agentic: no
+Claude Code agent chose actions. A script applied predefined edits to
+`autoresearch/train.py`, ran the evaluator, and recorded validation loss.
 
-**Main result**: `width30_lr_low` is the best current baseline. It starts at
-`val_bpb = 0.841354`, keeps three independent improvement paths open, and sets
-a reviewer target `q* = 0.824`.
+**Main result**: the selected starting point has `val_bpb = 0.841354`. It is
+good enough to be credible, but still improvable in three different ways.
 
-**Caveat**: This study does not prove an agent workflow works. It calibrates the
-benchmark so later agentic studies are not won by a trivial or saturated task.
+**Target for later agents**: `q* = 0.824`. This is the validation-loss threshold
+an agent run should beat to count as a meaningful improvement.
 
-**Presentation takeaways**:
+**Caveat**: this study does not test agents. It only calibrates the benchmark so
+later agent studies are not won by an easy or saturated task.
 
-1. The selected baseline is deliberately healthy-but-mistuned, not broken.
-2. Three different edit categories beat it: batch/data, optimizer/LR, and
-   normalization/capacity.
-3. The 585-step evaluator was rejected because it was too permissive; at 1170
-   steps, the task keeps useful headroom and still has negative controls.
+## Terms
+
+- **Baseline**: the starting `train.py` agents will edit.
+- **LR**: learning rate, the step size used by the optimizer during training.
+- **Fixed steps**: every trial trains for the same number of gradient updates.
+  This is stricter than training for a fixed wall-clock time.
+- **1170 steps**: the fixed-step length selected for the current benchmark. The
+  shorter 585-step screen was too easy: almost every reasonable edit improved.
+- **Edit family**: a type of intervention, such as batch size, learning rate, or
+  model width.
 
 ## Research Question
 
@@ -75,19 +77,24 @@ AUTOSEARCH_MAX_STEPS = 1170
 
 Total controlled evaluations summarized here: **161**.
 
+Trial counts differ because the screens tested different candidate/edit panels,
+and no-op edits were skipped. For comparisons across screens, use normalized
+edit win rate (`raw_wins / edit_count`) rather than raw trial count.
+
 ## Key Figures
 
 ![Presentation baseline choice](results/figures/figure-05-presentation-baseline-choice.png)
 
-**Figure 5**: presentation summary of why `width30_lr_low` was chosen. It is not
-the weakest candidate, and it avoids the high-win-rate region where the task
-becomes too permissive for confirmatory claims.
+**Figure 5**: each dot is a candidate starting point. The x-axis normalizes by
+trial count: it shows the share of tested edits that improved that candidate.
+The selected baseline sits in the useful region: several edit families work, but
+not every edit wins.
 
 ![Presentation width30 detail](results/figures/figure-06-presentation-width30-detail.png)
 
-**Figure 6**: controlled edits around the selected baseline. Green bars are
-real headroom; red bars are negative or near-negative controls. The `q* = 0.824`
-target is tied to the third distinct winning category.
+**Figure 6**: simple edit-level readout for the selected baseline. Green bars
+lower validation loss; red bars make it worse. The dashed blue line is the
+future agent target.
 
 ![Baseline screen overview](results/figures/figure-01-baseline-screen-overview.png)
 
@@ -110,7 +117,7 @@ target is tied to the third distinct winning category.
 Recommended baseline:
 
 ```text
-baseline_id = width30_lr_low
+baseline_id = width30_lr_low  # internal ID: slightly narrower model, lower learning rate
 run = refinement_fixed1170
 baseline val_bpb = 0.841354
 q* = 0.824
