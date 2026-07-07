@@ -11,4 +11,4 @@ agentic execution modes under quality, cost, and wall-clock constraints.
 Related setup:
 
 - [`../reproducibility.md`](../reproducibility.md) explains local dependencies,
-  Claude Code setup, and reviewer-grade rerun settings.
+  Claude Code setup, and fixed-step rerun settings.

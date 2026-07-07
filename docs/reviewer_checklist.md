@@ -28,7 +28,7 @@ to know whether AgentOps Lab is real, inspectable, and honest about its limits.
 
 | Claim | Evidence | Status |
 |---|---|---|
-| The benchmark baseline was calibrated before agent claims. | `studies/baseline_headroom/README.md` | 161 controlled non-agentic evaluations. |
+| The benchmark starting model was calibrated before agent claims. | `studies/baseline_headroom/README.md` | 161 controlled evaluations; 1170-update runs are the decision evidence. |
 | Training noise can be removed from the evaluator. | `studies/calibration_design/results/calibration_design_summary.md` | Five identical baseline runs at `val_bpb = 0.811222`. |
 | Shared memory can reduce destructive exploration in this substrate. | `studies/bp_probe_ablation/results/probe_ablation_summary.md` | P12 beats P11 on best and mean `val_bpb`, with `p < 0.001`. |
 | The earliest pilot exposed real design flaws. | `studies/bp_implementation/results/implementation_pilot_summary.md` | Archived as historical context, not overclaimed. |
@@ -57,7 +57,7 @@ to know whether AgentOps Lab is real, inspectable, and honest about its limits.
 ## Next Stronger Proof Points
 
 1. Replicate the P11/P12 result across multiple seeds and model families.
-2. Run the calibrated `width30_lr_low` benchmark with reviewer-grade settings.
+2. Run the calibrated `width30_lr_low` benchmark with fixed-step, logged settings.
 3. Add a lightweight hosted or recorded demo generated from a fresh run.
 4. Add CI for tests and public-surface smoke checks.
 5. Choose and publish an explicit license before asking external users to adopt

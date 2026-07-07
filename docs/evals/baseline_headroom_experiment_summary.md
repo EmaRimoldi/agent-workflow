@@ -1,14 +1,14 @@
 # Starting Model Calibration Summary
 
-Generated after the starting-model calibration screens run on April 14, 2026.
+Generated after the starting-model calibration batches run on April 14, 2026.
 
 ## Studies Run
 
 | run | training updates | trials | purpose |
 | --- | ---: | ---: | --- |
-| `runs/baseline_headroom_calibration_fixed1170` | 1170 | 43 | initial screen over plausible starting points |
-| `runs/baseline_headroom_calibration_extended_targeted_fixed1170` | 1170 | 38 | broader model / optimizer / regularization screen |
-| `runs/baseline_refinement_custom_fixed585` | 585 | 40 | shorter-step refinement screen |
+| `runs/baseline_headroom_calibration_fixed1170` | 1170 | 43 | initial batch over plausible starting points |
+| `runs/baseline_headroom_calibration_extended_targeted_fixed1170` | 1170 | 38 | broader model / optimizer / regularization batch |
+| `runs/baseline_refinement_custom_fixed585` | 585 | 40 | exploratory/debugging batch, excluded from the decision |
 | `runs/baseline_refinement_custom_fixed1170` | 1170 | 40 | intermediate-width / head / mild-dropout refinement |
 
 Total controlled training evaluations: 161. These were non-agentic calibration
@@ -17,9 +17,10 @@ chose the edits.
 
 ## Main Finding
 
-The 585-update task is too permissive for later agent comparisons. Many
-reasonable edits win, so it is less useful for testing whether an agent workflow
-actually improves search quality.
+The decision uses only 1170-update runs. The 585-update task is preserved as
+exploratory/debugging evidence, but it is too permissive for later agent
+comparisons: many reasonable edits win, so it is less useful for testing whether
+an agent workflow actually improves search quality.
 
 The best current candidate is the starting model now described as "width 30,
 lower learning rate":
@@ -48,10 +49,10 @@ only mildly mis-tuned through width, learning rate, and schedule.
 
 | metric | value |
 | --- | ---: |
-| baseline val_bpb | 0.841354 |
+| validation loss before edits | 0.841354 |
 | edit wins | 4 / 7 |
 | winning categories | 3 |
-| target loss from third winning family | 0.823338 |
+| success threshold from third winning family | 0.823338 |
 
 Winning categories:
 
@@ -69,13 +70,14 @@ Negative / near-negative controls:
 | `adamw_1e3` | optimizer_lr | 0.878075 | worse |
 | `schedule_on` | scheduler | 0.845433 | worse |
 
-Recommended target for the next pilot:
+Recommended success threshold for the next pilot:
 
 ```text
 target_val_bpb = 0.824
 ```
 
-This includes the third winning category (`width32`, 0.823338) while still
+`target_val_bpb` is the code/config field for the success threshold. This value
+includes the third winning category (`width32`, 0.823338) while still
 requiring a real improvement over the baseline (0.841354).
 
 ## Why Not the Other Candidates
@@ -85,7 +87,7 @@ obviously weakened and closer to the current task.
 
 ```text
 narrow_lr_low:
-baseline = 0.864447
+validation_loss_before_edits = 0.864447
 winning categories = optimizer_lr, normalization_capacity, data_batch
 raw wins = 4 / 8
 target_val_bpb = 0.832826
@@ -98,15 +100,15 @@ baseline.
 
 `weak_regularization_no_schedule` is too strong/narrow: only `data_batch` wins.
 
-`width28_lr_low`, `width24_lr_mid`, `fc96_lr_low`, and all 585-step refinements
-were too permissive.
+`width28_lr_low`, `width24_lr_mid`, and `fc96_lr_low` were too permissive at
+1170 updates. The 585-update refinements are not decision evidence.
 
 ## Decision
 
 Use the `width30_lr_low` starting point with `AUTOSEARCH_MAX_STEPS = 1170` for
 the next agent pilot.
 
-Do not use the 585-step evaluator for the confirmatory 2x2. It makes the task
+Do not use the 585-update evaluator for the confirmatory 2x2. It makes the task
 too easy and too dominated by broad early-training improvements.
 
 Before the final 2x2, run a small agentic pilot on `width30_lr_low` with:

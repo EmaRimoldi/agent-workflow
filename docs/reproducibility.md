@@ -8,7 +8,7 @@ This repo can be used at three levels:
 
 Historical study summaries are preserved evidence bundles. New agent runs will
 not be bit-for-bit identical because Claude Code, model routing, service
-versions, and stochastic agent decisions can change over time. For reviewer-grade
+versions, and stochastic agent decisions can change over time. For serious
 reruns, pin the model, use fixed-step evaluation, and keep the generated run
 directory.
 

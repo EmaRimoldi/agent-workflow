@@ -5,6 +5,9 @@
 **Purpose**: choose one controlled `autoresearch/train.py` starting point before
 comparing agent workflows.
 
+Read [`task_warrant.md`](task_warrant.md) first if you want the rationale for
+the task and the 1170-update evaluator.
+
 ## Why This Exists
 
 Future experiments ask whether different agent workflows can improve a small ML
@@ -13,7 +16,7 @@ from the same `train.py`.
 
 The starting point cannot be arbitrary:
 
-- if it is already too good, agents have little room to improve it;
+- if it is already too good, few useful improvements remain;
 - if it is too broken, improvements are obvious and the task is too easy;
 - if it is unstable, differences between agents may just be evaluator noise.
 
@@ -26,6 +29,8 @@ An agent will edit `autoresearch/train.py`; the evaluator will train it for
 1170 optimizer updates; the result is scored by validation loss.
 
 Lower validation loss is better. In the logs this value is named `val_bpb`.
+An optimizer update is one parameter-update step during training. It is not an
+agent reasoning step and not wall-clock time.
 
 ## What Was Run
 
@@ -33,14 +38,16 @@ This was not an agent experiment. A script applied predefined edits to candidate
 starting files and measured what happened.
 
 - **161** controlled evaluator runs.
-- **4** screening passes.
-- **585** and **1170** optimizer-update screens.
+- **4** calibration batches.
+- **1170** optimizer updates for all decision evidence.
+- **585** optimizer-update runs preserved only as exploratory/debugging
+  evidence.
 - Edits covered batch size, learning rate, model capacity, schedule, optimizer,
   and regularization.
 
-Trial counts differ because each screen tested a different set of candidates and
-edits. Comparisons therefore use **edit success rate**: successful edits divided
-by tested edits.
+Trial counts differ because each calibration batch tested a different set of
+candidates and edits. The decision therefore uses **edit success rate**:
+successful edits divided by tested edits, restricted to 1170-update runs.
 
 ## Result
 
@@ -50,8 +57,8 @@ The selected starting point is:
 human description: width 30, lower learning rate
 internal id:        width30_lr_low
 training length:   1170 optimizer updates
-starting loss:     val_bpb = 0.841354
-future target:     val_bpb <= 0.824
+score before edit: val_bpb = 0.841354
+success threshold: val_bpb <= 0.824
 ```
 
 Why this one:
@@ -69,11 +76,11 @@ Why this one:
 **Figure 1** explains the task. There is no separate `Q` metric in this report:
 the quality score is validation loss, `val_bpb`, and lower is better.
 
-![Training update choice](results/figures/figure-02-gate-diagnostics.png)
+![Evidence scope](results/figures/figure-02-gate-diagnostics.png)
 
-**Figure 2** explains why the study uses 1170 optimizer updates. At 585 updates,
-edits won too often, so that screen was mostly useful for debugging. The 1170
-screen leaves useful improvements while preserving failures.
+**Figure 2** shows which evidence counts. The decision uses 1170-update runs.
+The 585-update runs are kept for provenance, but they are excluded from ranking,
+threshold selection, and future agent-comparison claims.
 
 ![Starting point choice](results/figures/figure-03-category-improvement-heatmap.png)
 
@@ -83,15 +90,12 @@ middle: not too hard, not too easy.
 ![Edit outcomes](results/figures/figure-04-recommended-baseline-detail.png)
 
 **Figure 4** shows the seven edits tested on the selected starting point. Green
-bars beat the future target; red bars are useful failures.
-
-![Result card](results/figures/figure-05-presentation-baseline-choice.png)
-
-**Figure 5** is the compact result card for presentations.
+bars reach the success threshold; red bars fail to improve enough.
 
 ![Edit family summary](results/figures/figure-06-presentation-width30-detail.png)
 
-**Figure 6** shows that three independent edit families can beat the target:
+**Figure 5** shows that three independent edit families can reach the success
+threshold:
 batch size, learning rate, and model capacity.
 
 ## Selected `train.py` Settings
@@ -109,7 +113,7 @@ BATCH_SIZE = 128
 AUTOSEARCH_MAX_STEPS = 1170
 ```
 
-## Edits That Beat The Target
+## Edits That Reach The Success Threshold
 
 | edit family | best edit | validation loss | improvement |
 | --- | --- | ---: | ---: |
@@ -128,13 +132,14 @@ any change.
 | raise learning rate to 0.001 | Learning rate / optimizer | 0.847634 | worse by 0.006280 |
 | switch optimizer to AdamW | Learning rate / optimizer | 0.878075 | worse by 0.036721 |
 
-## Why Not 585 Updates
+## Why 585 Updates Are Not Used For Claims
 
-The 585-update screen was too easy: almost every reasonable edit improved the
-model. That is useful for debugging, but weak for evaluating agent workflows.
+The 585-update runs were too permissive: too many simple edits improved the
+model. They are useful for debugging and provenance, but weak for evaluating
+agent workflows.
 
-At 1170 updates, the task still has real improvements available while retaining
-negative controls.
+All decision analysis therefore uses 1170 optimizer updates. Do not mix 585 and
+1170 runs in the same claim.
 
 ## Next Step
 
@@ -156,4 +161,4 @@ report separately: agent thinking time and evaluator training time
 
 Legacy note: the folder and raw tables still use historical names such as
 `baseline_headroom`, `q3`, and `q_star`. In this README, those mean starting
-model calibration and target validation loss.
+model calibration and success-threshold validation loss.

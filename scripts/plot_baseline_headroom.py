@@ -8,7 +8,6 @@ candidate IDs. Raw IDs remain in the CSV/JSON artifacts for provenance.
 from __future__ import annotations
 
 from pathlib import Path
-import textwrap
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -26,7 +25,7 @@ TARGET_LOSS = 0.824
 
 
 STARTING_MODEL_NAMES = {
-    "weak_regularization_no_schedule": "already strong;\nlittle room",
+    "weak_regularization_no_schedule": "already strong;\nfew edits work",
     "width30_lr_low": "selected:\nwidth 30 + lower LR",
     "narrow_lr_low": "narrower model",
     "sgd_baseline": "SGD optimizer",
@@ -119,10 +118,6 @@ def _save(fig: plt.Figure, name: str) -> None:
     plt.close(fig)
 
 
-def _caption(fig: plt.Figure, text: str, *, width: int = 112) -> None:
-    fig.text(0.08, 0.025, textwrap.fill(text, width=width), color="#475569", fontsize=11.5)
-
-
 def figure_01_task_definition() -> None:
     fig, ax = plt.subplots(figsize=(12, 8))
     ax.axis("off")
@@ -131,8 +126,8 @@ def figure_01_task_definition() -> None:
     boxes = [
         ("1", "Start from one\ntrain.py", "same starting point\nfor every future agent"),
         ("2", "Agent edits\ntrain.py", "changes architecture,\noptimizer, or training choices"),
-        ("3", "Run the evaluator", "train for 1170 optimizer\nupdates, then measure validation loss"),
-        ("4", "Score the result", "lower validation loss\nmeans a better candidate"),
+        ("3", "Run the evaluator", "train for 1170 optimizer\nupdates: 1170 parameter updates"),
+        ("4", "Score the result", "validation loss on held-out data;\nlower means better"),
     ]
 
     positions = [(0.08, 0.58), (0.54, 0.58), (0.08, 0.28), (0.54, 0.28)]
@@ -155,40 +150,45 @@ def figure_01_task_definition() -> None:
     ax.text(
         0.08,
         0.08,
-        "Metric used here: validation loss, named val_bpb in the logs. There is no separate Q metric in this report.",
+        "Metric used here: validation loss, named val_bpb in the logs. There is no separate Q or Q* metric in this report.",
         fontsize=12,
         color="#475569",
     )
     _save(fig, "figure-01-baseline-screen-overview.png")
 
 
-def figure_02_why_1170_updates(starts: pd.DataFrame) -> None:
+def figure_02_analysis_scope(starts: pd.DataFrame) -> None:
     grouped = (
-        starts.assign(screen=np.where(starts["fixed_steps"] == 585, "585 updates", "1170 updates"))
+        starts.assign(
+            screen=np.where(
+                starts["fixed_steps"] == 1170,
+                "1170 updates\nused for decisions",
+                "585 updates\ndebug only",
+            )
+        )
         .groupby("screen")
         .agg(
-            mean_success=("raw_win_rate", "mean"),
-            too_easy=("raw_win_rate", lambda values: (values >= 0.85).mean()),
+            total_edits=("edit_count", "sum"),
             n=("raw_win_rate", "size"),
         )
-        .reindex(["585 updates", "1170 updates"])
+        .reindex(["1170 updates\nused for decisions", "585 updates\ndebug only"])
     )
 
-    fig, ax = plt.subplots(figsize=(9.5, 5.8))
+    fig, ax = plt.subplots(figsize=(10.5, 5.8))
     x = np.arange(len(grouped))
-    bars = ax.bar(x, grouped["mean_success"], color=["#94a3b8", "#2563eb"], width=0.55)
-    ax.set_title("Why use 1170 training updates?")
-    ax.set_ylabel("Average share of edits that improved")
+    bars = ax.bar(x, grouped["total_edits"], color=["#2563eb", "#cbd5e1"], width=0.55)
+    ax.set_title("Which calibration runs count for the decision?")
+    ax.set_ylabel("Predefined edits evaluated")
     ax.set_xticks(x)
     ax.set_xticklabels(grouped.index)
-    ax.set_ylim(0, 1.05)
+    ax.set_ylim(0, grouped["total_edits"].max() * 1.25)
     ax.grid(axis="x", visible=False)
 
-    for bar, (_, row) in zip(bars, grouped.iterrows()):
+    for idx, (bar, (_, row)) in enumerate(zip(bars, grouped.iterrows())):
         ax.text(
             bar.get_x() + bar.get_width() / 2,
-            bar.get_height() + 0.04,
-            f"{bar.get_height():.0%}\naverage",
+            bar.get_height() + grouped["total_edits"].max() * 0.035,
+            f"{int(row['total_edits'])} edits",
             ha="center",
             va="bottom",
             fontsize=12,
@@ -196,20 +196,14 @@ def figure_02_why_1170_updates(starts: pd.DataFrame) -> None:
         )
         ax.text(
             bar.get_x() + bar.get_width() / 2,
-            0.07,
-            f"{int(row['n'])} starting\nmodels tested",
+            grouped["total_edits"].max() * 0.07,
+            f"{int(row['n'])} starting\nmodels",
             ha="center",
             va="bottom",
             fontsize=11,
-            color="#f8fafc" if bar.get_height() > 0.35 else "#475569",
+            color="#f8fafc" if idx == 0 else "#475569",
         )
 
-    _caption(
-        fig,
-        "The shorter screen was mostly a debugging screen: edits won too often. "
-        "The 1170-update screen keeps improvements available while preserving failures.",
-        width=90,
-    )
     _save(fig, "figure-02-gate-diagnostics.png")
 
 
@@ -248,7 +242,7 @@ def figure_03_starting_model_choice(starts: pd.DataFrame) -> None:
         if row.selected:
             verdict = "chosen"
         elif row.raw_win_rate < 0.30:
-            verdict = "too little room"
+            verdict = "too hard"
         elif row.raw_win_rate > 0.85:
             verdict = "too easy"
         else:
@@ -264,11 +258,6 @@ def figure_03_starting_model_choice(starts: pd.DataFrame) -> None:
             color="#374151",
         )
 
-    _caption(
-        fig,
-        "This chart uses normalized edit success rate, so screens with different trial counts can be compared.",
-        width=96,
-    )
     _save(fig, "figure-03-category-improvement-heatmap.png")
 
 
@@ -280,8 +269,20 @@ def figure_04_selected_edits(starts: pd.DataFrame, trials: pd.DataFrame, name: s
 
     fig, ax = plt.subplots(figsize=(11.2, 6.5))
     ax.barh(y, edits["val_bpb"], color=colors, alpha=0.9)
-    ax.axvline(float(selected_row["baseline_val_bpb"]), color="#111827", linestyle=":", linewidth=1.5, label="starting loss")
-    ax.axvline(TARGET_LOSS, color="#2563eb", linestyle="--", linewidth=1.8, label="future target")
+    ax.axvline(
+        float(selected_row["baseline_val_bpb"]),
+        color="#111827",
+        linestyle=":",
+        linewidth=1.5,
+        label=f"score before edits: {selected_row['baseline_val_bpb']:.3f}",
+    )
+    ax.axvline(
+        TARGET_LOSS,
+        color="#2563eb",
+        linestyle="--",
+        linewidth=1.8,
+        label=f"success threshold: <= {TARGET_LOSS:.3f}",
+    )
     ax.set_yticks(y)
     ax.set_yticklabels(edits["edit_name"])
     ax.set_xlim(0.76, 0.89)
@@ -300,45 +301,7 @@ def figure_04_selected_edits(starts: pd.DataFrame, trials: pd.DataFrame, name: s
             color="#374151",
         )
 
-    _caption(
-        fig,
-        "Green edits beat the future target. Red edits are useful negative controls: they show that not every change wins.",
-        width=100,
-    )
     _save(fig, name)
-
-
-def figure_05_result_card(starts: pd.DataFrame) -> None:
-    selected = starts[(starts["baseline_id"] == SELECTED_ID) & (starts["run_id"] == SELECTED_RUN)].iloc[0]
-
-    fig, ax = plt.subplots(figsize=(10.5, 7.4))
-    ax.axis("off")
-    ax.set_title("Selected starting point for future agent runs", pad=18)
-
-    cards = [
-        ("Starting loss", f"{selected['baseline_val_bpb']:.3f}", "validation loss before any agent edit"),
-        ("Target loss", f"{TARGET_LOSS:.3f}", "future agent runs must go below this"),
-        ("Edits that worked", f"{int(selected['raw_wins'])}/{int(selected['edit_count'])}", "not too easy, not impossible"),
-        ("Edit families", f"{int(selected['category_count'])}", "batch size, learning rate, model capacity"),
-    ]
-    positions = [(0.08, 0.54), (0.54, 0.54), (0.08, 0.25), (0.54, 0.25)]
-    for (x, y), (label, value, note) in zip(positions, cards):
-        rect = plt.Rectangle((x, y), 0.36, 0.22, facecolor="#f8fafc", edgecolor="#cbd5e1", linewidth=1.3)
-        ax.add_patch(rect)
-        ax.text(x + 0.025, y + 0.17, label, fontsize=11.5, color="#475569", va="top")
-        ax.text(x + 0.025, y + 0.115, value, fontsize=25, fontweight="bold", color="#111827", va="top")
-        ax.text(x + 0.15, y + 0.11, "\n".join(textwrap.wrap(note, 28)), fontsize=10.5, color="#475569", va="top")
-
-    ax.text(
-        0.07,
-        0.10,
-        "Why this matters: all future workflows should start from the same controlled file, "
-        "otherwise a comparison between agents is not meaningful.",
-        fontsize=13,
-        color="#111827",
-        wrap=True,
-    )
-    _save(fig, "figure-05-presentation-baseline-choice.png")
 
 
 def figure_06_family_summary(starts: pd.DataFrame, trials: pd.DataFrame) -> None:
@@ -354,23 +317,18 @@ def figure_06_family_summary(starts: pd.DataFrame, trials: pd.DataFrame) -> None
 
     fig, ax = plt.subplots(figsize=(10.5, 5.8))
     ax.barh(y, family_best["best_loss"], color=colors, alpha=0.9)
-    ax.axvline(TARGET_LOSS, color="#2563eb", linestyle="--", linewidth=1.8, label="future target")
+    ax.axvline(TARGET_LOSS, color="#2563eb", linestyle="--", linewidth=1.8, label=f"success threshold: <= {TARGET_LOSS:.3f}")
     ax.set_yticks(y)
     ax.set_yticklabels(family_best["family"])
     ax.set_xlim(0.76, 0.89)
     ax.set_xlabel("Best validation loss in each edit family")
-    ax.set_title("Three different edit families can beat the target")
+    ax.set_title("Three different edit families can reach the success threshold")
     ax.grid(axis="y", visible=False)
-    ax.legend(loc="lower right")
+    ax.legend(loc="upper right")
 
     for idx, row in enumerate(family_best.itertuples(index=False)):
         ax.text(row.best_loss + 0.003, idx, f"{row.best_loss:.3f}", va="center", fontsize=10.5, color="#374151")
 
-    _caption(
-        fig,
-        "The chosen task is not solved by one narrow trick: batch size, learning rate, and capacity each have a winning edit.",
-        width=100,
-    )
     _save(fig, "figure-06-presentation-width30-detail.png")
 
 
@@ -379,15 +337,14 @@ def main() -> None:
     FIGURES.mkdir(parents=True, exist_ok=True)
     starts, trials = _load()
     figure_01_task_definition()
-    figure_02_why_1170_updates(starts)
+    figure_02_analysis_scope(starts)
     figure_03_starting_model_choice(starts)
     figure_04_selected_edits(
         starts,
         trials,
         "figure-04-recommended-baseline-detail.png",
-        title="What happened when simple edits were tested?",
+        title="What happened when seven predefined edits were tested?",
     )
-    figure_05_result_card(starts)
     figure_06_family_summary(starts, trials)
 
 

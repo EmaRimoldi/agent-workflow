@@ -1,7 +1,7 @@
 # Studies
 
 This directory is the empirical spine of AgentOps Lab. Each study should be read
-with the same rhythm:
+with the same structure:
 
 1. What question was being tested?
 2. What was actually run?
@@ -22,7 +22,7 @@ left out.
   `P11` and `P12` are retained because they identify exact experimental cells.
 - **Wave**: an execution batch inside a study. It is scheduling metadata, not a
   public milestone.
-- **Reviewer-grade run**: a run that uses fixed-step evaluation, preserved logs,
+- **Confirmatory run**: a run that uses fixed-step evaluation, preserved logs,
   and a pre-registered success threshold.
 
 ## Reading Order
@@ -48,13 +48,14 @@ Read the studies in this order if you want the cleanest narrative:
 **Question**: which `autoresearch/train.py` should every future agent workflow
 start from?
 
-**What was run**: 161 controlled non-agentic evaluations across baseline/edit
-panels at fixed evaluator lengths, including the selected 1170-update screen.
+**What was run**: 161 controlled evaluations across starting-model/edit panels.
+Only the 1170-update runs are used for the decision; 585-update runs are
+preserved as exploratory/debugging evidence.
 
 **Main result**: the selected starting model is "width 30, lower learning
-rate" (internal ID `width30_lr_low`): `val_bpb = 0.841354`, with future agent
-target `target_val_bpb = 0.824`. It preserves multiple useful improvement
-categories while keeping negative controls.
+rate" (internal ID `width30_lr_low`): `val_bpb = 0.841354` before edits, with
+success threshold `target_val_bpb = 0.824`. It preserves multiple useful
+improvement categories while keeping failed edits.
 
 **Caveat**: This is not an agent result. It chooses the common starting point so
 later agent comparisons are fair.

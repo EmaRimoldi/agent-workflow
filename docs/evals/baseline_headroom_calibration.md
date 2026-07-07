@@ -46,9 +46,9 @@ uv run agentops baseline-calibration \
 The full default panel runs 5 baseline candidates and 10 controlled edits per
 candidate, minus no-op edits. On CPU this can take hours at 1170 training
 updates. Use
-`--baseline-ids` and `--edit-ids` for a smaller screen when iterating.
+`--baseline-ids` and `--edit-ids` for a smaller calibration batch when iterating.
 
-Broader follow-up screen:
+Broader follow-up batch:
 
 ```bash
 PYTHONPATH=src python -m agentops_lab.baseline_calibration \
@@ -59,7 +59,7 @@ PYTHONPATH=src python -m agentops_lab.baseline_calibration \
   --out-dir runs/baseline_headroom_calibration_extended_fixed1170
 ```
 
-For custom screens, provide JSON lists of spec objects:
+For custom batches, provide JSON lists of spec objects:
 
 ```json
 [
@@ -80,7 +80,7 @@ The script writes:
 - `baseline_headroom_plan.json`: exact trial plan;
 - `baseline_headroom_results.json`: machine-readable results and gate decision;
 - `baseline_headroom_trials.tsv`: flat table for quick inspection;
-- `baseline_headroom_report.md`: report generated from the calibration screen.
+- `baseline_headroom_report.md`: report generated from the calibration batch.
 
 ## Gate
 
