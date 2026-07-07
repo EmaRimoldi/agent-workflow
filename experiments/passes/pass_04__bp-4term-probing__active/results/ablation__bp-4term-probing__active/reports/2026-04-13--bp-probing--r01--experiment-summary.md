@@ -353,7 +353,7 @@ Tassi di successo per categoria strategica:
 |------|-------------|
 | `configs/probe_P01_parallel_homo.yaml` — `probe_P18_seeded_parallel.yaml` | 18 file YAML con tutte le configurazioni |
 | `workflow/scripts/run_probes.py` | Runner principale con definizioni Wave 1-4 |
-| `src/agent_parallelization_new/agents/claude_agent_runner.py` | Runner agente con fix symlink (post-P12) |
+| `src/agentops_lab/agents/claude_agent_runner.py` | Runner agente con fix symlink (post-P12) |
 
 ### Dati grezzi
 

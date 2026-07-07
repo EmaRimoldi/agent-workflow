@@ -1,7 +1,7 @@
 # AgentOps Lab Architecture
 
-AgentOps Lab treats `agentic_systems` as the public package surface while the
-current tested runtime remains under `agent_parallelization_new`. The public
+AgentOps Lab treats `agentops_lab` as the public package surface while the
+current tested runtime remains under `agentops_lab`. The public
 architecture is split between stable interfaces, compatibility runtime,
 evaluation tooling, and experiment evidence.
 
@@ -9,25 +9,25 @@ evaluation tooling, and experiment evidence.
 
 ```text
 agentic CLI
-  -> modes.parallel       -> agent_parallelization_new.launcher.main_parallel
-  -> modes.single_long    -> agent_parallelization_new.launcher.main_single_long
-  -> modes.merge          -> agent_parallelization_new.merger.MergeOrchestrator
+  -> modes.parallel       -> agentops_lab.launcher.main_parallel
+  -> modes.single_long    -> agentops_lab.launcher.main_single_long
+  -> modes.merge          -> agentops_lab.merger.MergeOrchestrator
   -> modes.swarm          -> integrated blackboard surface and swarm runtime
 
-agentic_systems.config
-  -> AgentConfig, ExperimentConfig from agent_parallelization_new.config
+agentops_lab.config
+  -> AgentConfig, ExperimentConfig from agentops_lab.config
 
-agentic_systems.orchestrator
-  -> Orchestrator from agent_parallelization_new.orchestrator
+agentops_lab.orchestrator
+  -> Orchestrator from agentops_lab.orchestrator
 
-agentic_systems.communication
+agentops_lab.communication
   -> SharedMemory blackboard
   -> coordinator helpers
 
-agentic_systems.analysis
+agentops_lab.analysis
   -> H_prior / H_post diversity metrics
 
-agentic_systems.instrumentation
+agentops_lab.instrumentation
   -> snapshotting
   -> reasoning traces
   -> certified time
@@ -38,11 +38,11 @@ agentic_systems.instrumentation
 There is one canonical config surface:
 
 ```python
-from agentic_systems.config import AgentConfig, ExperimentConfig
+from agentops_lab.config import AgentConfig, ExperimentConfig
 ```
 
 During this public-release phase it re-exports the runtime dataclasses from
-`agent_parallelization_new.config`. This keeps existing behavior stable while
+`agentops_lab.config`. This keeps existing behavior stable while
 runtime ownership moves behind the canonical package surface.
 
 ## Orchestration
@@ -50,10 +50,10 @@ runtime ownership moves behind the canonical package surface.
 There is one canonical orchestrator surface:
 
 ```python
-from agentic_systems.orchestrator import Orchestrator
+from agentops_lab.orchestrator import Orchestrator
 ```
 
-It currently delegates to `agent_parallelization_new.orchestrator.Orchestrator`.
+It currently delegates to `agentops_lab.orchestrator.Orchestrator`.
 The existing orchestrator owns process spawning, git worktree isolation, worker
 integration, output collection, and report generation.
 
@@ -61,16 +61,16 @@ integration, output collection, and report generation.
 
 | Mode | Module | Current integration status |
 |---|---|---|
-| `parallel` | `agentic_systems.modes.parallel` | Thin wrapper around the runtime launcher |
-| `single_long` | `agentic_systems.modes.single_long` | Thin wrapper around the runtime launcher |
-| `merge` | `agentic_systems.modes.merge` | Wrapper around `MergeOrchestrator`; CLI also preserves script behavior |
-| `swarm` | `agentic_systems.modes.swarm` | Canonical blackboard creation plus `--run` delegation to the swarm runtime |
+| `parallel` | `agentops_lab.modes.parallel` | Thin wrapper around the runtime launcher |
+| `single_long` | `agentops_lab.modes.single_long` | Thin wrapper around the runtime launcher |
+| `merge` | `agentops_lab.modes.merge` | Wrapper around `MergeOrchestrator`; CLI also preserves script behavior |
+| `swarm` | `agentops_lab.modes.swarm` | Canonical blackboard creation plus `--run` delegation to the swarm runtime |
 
 ## Integrated Components
 
 ### Blackboard Communication
 
-`src/agentic_systems/communication/blackboard.py` provides:
+`src/agentops_lab/communication/blackboard.py` provides:
 
 - append-only JSONL shared memory
 - file locking via `fcntl`
@@ -80,19 +80,19 @@ integration, output collection, and report generation.
 
 ### Swarm Coordinator
 
-`src/agentic_systems/communication/coordinator.py` imports the canonical
+`src/agentops_lab/communication/coordinator.py` imports the canonical
 blackboard module and exposes local coordination helpers for shared-memory
 agent workflows.
 
 ### Diversity Metrics
 
-`src/agentic_systems/analysis/diversity.py` consolidates H_prior/H_post-style
+`src/agentops_lab/analysis/diversity.py` consolidates H_prior/H_post-style
 analysis. Lightweight trajectory DTW is dependency-free; embedding and
 weight-space metrics import heavy ML dependencies lazily.
 
 ### Instrumentation
 
-`src/agentic_systems/instrumentation/` consolidates:
+`src/agentops_lab/instrumentation/` consolidates:
 
 - snapshotting
 - reasoning traces
@@ -101,6 +101,6 @@ weight-space metrics import heavy ML dependencies lazily.
 ## Output And Reporting
 
 The canonical reporting pipeline is still the runtime output stack under
-`src/agent_parallelization_new/outputs/` plus merge/report scripts and the swarm
+`src/agentops_lab/outputs/` plus merge/report scripts and the swarm
 reporter path. A future cleanup should move that ownership under
-`agentic_systems.outputs` and leave compatibility imports behind.
+`agentops_lab.outputs` and leave compatibility imports behind.

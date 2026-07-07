@@ -224,7 +224,7 @@ def main(argv=None) -> None:
     print("\n[merge] Creating merge workspace and submitting to SLURM...")
     merge_ws = merge_dir / "workspace"
     sys.path.insert(0, str(repo_root / "src"))
-    from agent_parallelization_new.utils.workspace import create_workspace
+    from agentops_lab.utils.workspace import create_workspace
 
     create_workspace(
         autoresearch_dir=auto,

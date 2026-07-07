@@ -25,7 +25,7 @@ uv run calibrate-baseline-headroom \
 If `uv` is not installed in the local shell, use:
 
 ```bash
-PYTHONPATH=src python -m agent_parallelization_new.baseline_calibration \
+PYTHONPATH=src python -m agentops_lab.baseline_calibration \
   --train-max-steps 2 \
   --baseline-ids lr_low_no_schedule \
   --edit-ids lr_1p5e3,batch64 \
@@ -49,7 +49,7 @@ candidate, minus no-op edits. On CPU this can take hours at 1170 steps. Use
 Broader follow-up screen:
 
 ```bash
-PYTHONPATH=src python -m agent_parallelization_new.baseline_calibration \
+PYTHONPATH=src python -m agentops_lab.baseline_calibration \
   --extended-panel \
   --train-max-steps 1170 \
   --train-time-budget 300 \

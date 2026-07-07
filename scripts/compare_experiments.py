@@ -8,8 +8,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "src"))
 
-from agent_parallelization_new.outputs.collector import collect_experiment
-from agent_parallelization_new.outputs.reporter import write_final_comparison
+from agentops_lab.outputs.collector import collect_experiment
+from agentops_lab.outputs.reporter import write_final_comparison
 
 
 def main() -> None:

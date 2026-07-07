@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from agentic_systems.communication.blackboard import SharedMemory, ENTRY_RESULT
+from agentops_lab.communication.blackboard import SharedMemory, ENTRY_RESULT
 
 
 def test_blackboard_claim_dedup_and_release(tmp_path: Path):

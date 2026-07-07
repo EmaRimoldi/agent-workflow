@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from agent_parallelization_new.certified_time import (
+from agentops_lab.certified_time import (
     collect_training_events,
     estimate_certified_times,
 )

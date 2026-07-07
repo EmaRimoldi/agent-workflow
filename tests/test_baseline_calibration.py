@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from agent_parallelization_new.baseline_calibration import (
+from agentops_lab.baseline_calibration import (
     TrialResult,
     apply_constant_changes,
     attach_improvements,

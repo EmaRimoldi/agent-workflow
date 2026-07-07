@@ -10,7 +10,7 @@ This upgrade implements the minimum protocol and logging changes needed so that 
 
 File:
 
-- `src/agent_parallelization_new/agents/claude_agent_runner.py`
+- `src/agentops_lab/agents/claude_agent_runner.py`
 
 Added behavior:
 
@@ -34,7 +34,7 @@ Requirement satisfied:
 
 Files:
 
-- `src/agent_parallelization_new/agents/claude_agent_runner.py`
+- `src/agentops_lab/agents/claude_agent_runner.py`
 
 Added fields in `training_runs.jsonl`:
 
@@ -60,7 +60,7 @@ Requirement satisfied:
 
 Files:
 
-- `src/agent_parallelization_new/agents/claude_agent_runner.py`
+- `src/agentops_lab/agents/claude_agent_runner.py`
 
 Added or retained per-turn observables in `turns.jsonl`:
 
@@ -89,8 +89,8 @@ Requirement satisfied:
 
 Files:
 
-- `src/agent_parallelization_new/agents/claude_agent_runner.py`
-- `src/agent_parallelization_new/snapshotting.py`
+- `src/agentops_lab/agents/claude_agent_runner.py`
+- `src/agentops_lab/snapshotting.py`
 - `templates/agent_system_prompt.md`
 
 Added observable fields:

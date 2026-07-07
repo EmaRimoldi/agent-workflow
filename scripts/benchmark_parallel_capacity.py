@@ -19,7 +19,7 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parents[1] / "src"))
 
-from agent_parallelization_new.resource_benchmark import ParallelCapacityBenchmark
+from agentops_lab.resource_benchmark import ParallelCapacityBenchmark
 
 
 def main(argv=None) -> None:

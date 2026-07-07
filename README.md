@@ -37,8 +37,8 @@ operational questions:
 
 ```text
 src/
-  agentic_systems/              public package surface and CLI
-  agent_parallelization_new/    compatibility runtime used by current tests
+  agentops_lab/              public package surface and CLI
+  agentops_lab/    compatibility runtime used by current tests
 
 docs/
   research/                     BP decomposition and experiment protocols
@@ -87,7 +87,7 @@ uv run agentic merge --help
 ```
 
 Compatibility entrypoints remain available while runtime ownership moves fully
-under `agentic_systems`:
+under `agentops_lab`:
 
 ```bash
 uv run run-parallel --help
@@ -99,10 +99,10 @@ uv run calibrate-baseline-headroom --help
 
 ## Public Package Surface
 
-The preferred import path is `agentic_systems`.
+The preferred import path is `agentops_lab`.
 
 ```text
-agentic_systems/
+agentops_lab/
   cli.py
   config.py
   orchestrator.py
@@ -122,7 +122,7 @@ agentic_systems/
     merge.py
 ```
 
-The compatibility implementation remains under `agent_parallelization_new`
+The compatibility implementation remains under `agentops_lab`
 during this public-release phase because it is the currently tested runtime for
 launching, collection, reporting, merge, baseline calibration, and certified
 time workflows.

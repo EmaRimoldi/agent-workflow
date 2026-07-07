@@ -1,7 +1,7 @@
 """Smoke tests for the consolidated canonical package surface."""
 
-from agentic_systems import AgentConfig, ExperimentConfig
-from agentic_systems.modes.swarm import SwarmModeConfig, create_swarm_blackboard, run_swarm
+from agentops_lab import AgentConfig, ExperimentConfig
+from agentops_lab.modes.swarm import SwarmModeConfig, create_swarm_blackboard, run_swarm
 
 
 def test_canonical_config_reexports_base_schema():
@@ -28,7 +28,7 @@ def test_swarm_run_delegates_to_imported_runtime(monkeypatch):
         calls["argv"] = argv
 
     monkeypatch.setattr(
-        "agent_parallelization_new.imported_swarms.launcher.main_imported_swarm",
+        "agentops_lab.imported_swarms.launcher.main_imported_swarm",
         fake_main,
     )
 

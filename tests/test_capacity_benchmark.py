@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from agent_parallelization_new.resource_benchmark import (
+from agentops_lab.resource_benchmark import (
     BenchmarkRecommendation,
     NResult,
     ParallelCapacityBenchmark,

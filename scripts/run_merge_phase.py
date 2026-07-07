@@ -23,7 +23,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "src"))
 
-from agent_parallelization_new.merger import MergeOrchestrator
+from agentops_lab.merger import MergeOrchestrator
 
 
 def main(argv=None) -> None:

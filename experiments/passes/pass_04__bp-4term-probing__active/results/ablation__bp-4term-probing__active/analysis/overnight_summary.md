@@ -250,8 +250,8 @@ results/figures/phase_04_probes/             # Phase 04 figures (3 PDFs)
 
 ### Modified files:
 - `autoresearch/train.py` (MAX_STEPS -> time-based stopping via AUTOSEARCH_TIME_BUDGET)
-- `src/agent_parallelization_new/compatibility/training_harness.py` (export AUTOSEARCH_TIME_BUDGET)
-- `src/agent_parallelization_new/agents/claude_agent_runner.py` (CRITICAL: 3 memory fixes)
+- `src/agentops_lab/compatibility/training_harness.py` (export AUTOSEARCH_TIME_BUDGET)
+- `src/agentops_lab/agents/claude_agent_runner.py` (CRITICAL: 3 memory fixes)
   1. Shared memory: results.tsv → training_runs.jsonl-based population
   2. Private memory: results.tsv → training_runs.jsonl-based context building
   3. Both memory types can now be active simultaneously (elif → if)

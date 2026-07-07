@@ -7,7 +7,7 @@ from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).parents[1] / "src"))
 
-from agent_parallelization_new.compatibility.original_repo_adapter import (
+from agentops_lab.compatibility.original_repo_adapter import (
     read_original_trajectory,
     read_all_original_trajectories,
     find_best_original_result,

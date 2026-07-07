@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from agent_parallelization_new.reasoning_trace import (
+from agentops_lab.reasoning_trace import (
     ReasoningEntry,
     ReasoningTracer,
     collect_all_traces,
