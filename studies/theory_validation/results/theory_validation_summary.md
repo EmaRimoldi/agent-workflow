@@ -8,7 +8,7 @@
 
 ## Research Question
 
-The agent workflow feasibility pilot built the experimental infrastructure and ran a first pilot, but found that the decomposition collapsed to a single term (cost only): phi, G, and epsilon were all zero or NaN. Was this because the *theory* is wrong, or because the *implementation* was broken?
+The first 2x2 pilot built the experimental infrastructure and ran a first pilot, but found that the decomposition collapsed to a single term (cost only): phi, G, and epsilon were all zero or NaN. Was this because the *theory* is wrong, or because the *implementation* was broken?
 
 This theory validation study asks three specific questions:
 
@@ -16,13 +16,13 @@ This theory validation study asks three specific questions:
 2. **Are the estimators structurally sound?** phi was hardcoded to zero, G used an entropy-difference placeholder, epsilon compared against the wrong distribution. Can we fix them?
 3. **With corrected estimators, does the pilot data now produce non-trivial decomposition terms?**
 
-**Background from the agent workflow feasibility pilot**: The BP four-term decomposition is:
+**Background from the first 2x2 pilot**: The BP four-term decomposition is:
 
 ```
 Delta = log(kappa_0 / kappa) + phi + G - epsilon
 ```
 
-The agent workflow feasibility pilot measured log(kappa_0/kappa) but found phi = G = epsilon = 0 across all cells. Two possible explanations: (a) the framework genuinely doesn't apply (negative result), or (b) the estimators were broken and the pilot was too underpowered to produce signal. The theory validation study investigates (b).
+The first 2x2 pilot measured log(kappa_0/kappa) but found phi = G = epsilon = 0 across all cells. Two possible explanations: (a) the framework genuinely doesn't apply (negative result), or (b) the estimators were broken and the pilot was too underpowered to produce signal. The theory validation study investigates (b).
 
 ## What Changed
 
@@ -37,7 +37,7 @@ This is the strongest statement that stays within what is actually justified. Th
 
 ### 2. Protocol upgrades
 
-The experimental framework now logs four new observables that the agent workflow feasibility pilot lacked:
+The experimental framework now logs four new observables that the first 2x2 pilot lacked:
 
 | New feature | What it enables |
 |-------------|-----------------|
@@ -149,7 +149,7 @@ With the redesigned estimators applied to the same pilot data:
 
 **Figure 3 interpretation**: Only the cost term is computable, and even it is unstable — d10 and d01 flip sign across reps on both axes. phi is NaN everywhere because no cell has overlapping accepted modes with the baseline (d00 had zero accepted edits). G is non-NaN only for d01 reps 1-2 (where the single accepted mode matched the global prior exactly, yielding G=0). epsilon = 0.693 (= ln(2)) appears in d01 reps 1-2 because the accepted distribution is concentrated on one mode while the proposed distribution has two modes — this is the only non-trivial non-cost term in the entire decomposition, and it is a degenerate case.
 
-**Bottom line**: The corrected estimators are *structurally capable* of producing non-zero phi, G, epsilon (unlike the agent workflow feasibility pilot where they were hardcoded to zero), but the pilot data is still too sparse to compute them. The data-limitation is: too few accepted edits, too little mode diversity, and zero overlap between cells.
+**Bottom line**: The corrected estimators are *structurally capable* of producing non-zero phi, G, epsilon (unlike the first 2x2 pilot where they were hardcoded to zero), but the pilot data is still too sparse to compute them. The data-limitation is: too few accepted edits, too little mode diversity, and zero overlap between cells.
 
 ### 4. Noise assay: verifier noise is substantial
 
@@ -190,7 +190,7 @@ With the redesigned estimators applied to the same pilot data:
 | H5: context pressure dominant | — | — | — | **Untestable** (observational only) |
 | H6: d11 dominates d00 on both axes | No | No | No | **0/3 — no support** |
 
-Hypothesis test results are essentially unchanged from the agent workflow feasibility pilot. The corrected estimators did not improve the empirical picture because the underlying data is still too sparse.
+Hypothesis test results are essentially unchanged from the first 2x2 pilot. The corrected estimators did not improve the empirical picture because the underlying data is still too sparse.
 
 ## Conclusions
 
@@ -231,6 +231,6 @@ The narrowest honest statement:
 ## Implications for Later Studies
 
 - **The calibration design study** introduced phased execution (execution, monitoring, analysis), probe-based experiments, and configuration routing to address the data sparsity problem.
-- **The probe ablation study** redesigned the 2x2 with confound controls: fixed seeds, CPU pinning, and starting-model calibration informed by the agent workflow feasibility pilot and theory validation study findings.
+- **The probe ablation study** redesigned the 2x2 with confound controls: fixed seeds, CPU pinning, and starting-model calibration informed by the first 2x2 pilot and theory validation study findings.
 
 The key insight from the theory validation study: the bottleneck is **data quality** (too few accepted edits, too little mode diversity, too noisy a verifier), not theory or code. Future studies must generate more diverse, successful agent edits before the decomposition can be meaningfully tested.

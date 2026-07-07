@@ -8,7 +8,7 @@
 
 ## Research Question
 
-The agent workflow feasibility pilot, theory validation study, and calibration design study established the infrastructure, fixed the theory, and calibrated the d00-d10 contrast, but never successfully identified the full phi + G - epsilon decomposition. The calibration design study's design audit revealed five systematic confounds that invalidated the original 2x2 experiment. The probe ablation study asks:
+The first 2x2 pilot, theory validation study, and calibration design study established the infrastructure, fixed the theory, and calibrated the d00-d10 contrast, but never successfully identified the full phi + G - epsilon decomposition. The calibration design study's design audit revealed five systematic confounds that invalidated the original 2x2 experiment. The probe ablation study asks:
 
 **With confounds controlled, can we detect the individual BP terms — and what empirical picture emerges when we do?**
 
@@ -247,7 +247,7 @@ High temperature produces more iterations per agent (mean 17.2 vs 9.2) but each 
 
 4. **Counterintuitive finding: homogeneity beats diversity**: Temperature diversity does NOT produce strategy diversity (Jaccard paradox). Homogeneous agents outperform diverse agents (p<0.001, r=0.581). The G term is not effectively controlled by temperature alone.
 
-5. **Five confounds from the calibration design study addressed**: Sequential execution (no CPU contention), temperature diversity (attempted homogeneity fix), memory bug fixes (valid epsilon test), shorter training (headroom test), extended budgets (sufficient iterations).
+5. **Five confounds from the calibration design study addressed**: Sequential execution (no CPU contention), temperature diversity (attempted homogeneity fix), memory bug fixes (valid epsilon test), shorter training (more room for measurable improvement), extended budgets (sufficient iterations).
 
 6. **Three critical memory bugs discovered and fixed**: The memory system was silently non-functional in P05-P08. Without discovering these bugs, the memory effect would have been incorrectly reported as null.
 
@@ -265,7 +265,7 @@ High temperature produces more iterations per agent (mean 17.2 vs 9.2) but each 
 
 | Study | Key discovery | Implication |
 |---|---|---|
-| Agent workflow feasibility pilot | Infrastructure works; resource contention confounds parallel cells | Need sequential execution for clean comparison |
+| Compute allocation calibration | Fixed-time parallel evaluation confounds agent quality with worker compute allocation | Need fixed-step or sequential evaluation for clean comparison |
 | Theory validation study | Estimators were broken; noise floor ~0.04-0.05 std | Need deterministic evaluation |
 | Calibration design study | Determinism achieved; memory anchors; diversity predicts success | Need to control memory structure and promote exploration breadth |
 | Probe ablation study | G without epsilon = random walk; task has 1.9% ceiling; LR is the only lever | BP decomposition is supported, but the substrate limits what can be demonstrated |
@@ -274,7 +274,7 @@ The strongest supported claim across all studies:
 
 > **The epsilon term (routing correction via memory) is necessary for the G term (information generation via exploration) to produce improvement rather than noise. Without epsilon, G produces a random walk that degrades performance.**
 
-This is supported by P11 vs P12 (p<0.001, r=0.917), is consistent with the calibration design study's finding that exploration diversity predicts success (rho=-0.685), and explains why the agent workflow feasibility pilot and theory validation study's memory effects were ambiguous (the memory system was broken, so epsilon was effectively zero).
+This is supported by P11 vs P12 (p<0.001, r=0.917), is consistent with the calibration design study's finding that exploration diversity predicts success (rho=-0.685), and explains why the first 2x2 pilot and theory validation study's memory effects were ambiguous (the memory system was broken, so epsilon was effectively zero).
 
 ### Open questions for future work
 

@@ -52,7 +52,7 @@ Key examples:
 | Starting model calibration | 161 controlled evaluations selected the common starting `train.py`: validation loss before edits `val_bpb = 0.841354`, success threshold `val_bpb <= 0.824` | [`studies/baseline_headroom/README.md`](studies/baseline_headroom/README.md) |
 | Shared memory effect | P12 shared-memory exploration found better and more stable results than P11 high-temperature exploration without memory: best `0.914` vs `0.934`, mean `1.049` vs `1.816` | [`studies/bp_probe_ablation/results/probe_ablation_summary.md`](studies/bp_probe_ablation/results/probe_ablation_summary.md) |
 | Deterministic evaluator | Five baseline runs produced identical `val_bpb = 0.811222`, removing training noise as the main explanation | [`studies/calibration_design/results/calibration_design_summary.md`](studies/calibration_design/results/calibration_design_summary.md) |
-| Agent workflow feasibility pilot | First 2x2 agent pilot built the instrumentation and exposed why the task, evaluator, and estimators needed redesign | [`studies/agent_workflow_feasibility_pilot/README.md`](studies/agent_workflow_feasibility_pilot/README.md) |
+| Compute allocation calibration | Fixed-time parallel training completed fewer optimizer updates and looked worse; fixed-step evaluation preserved quality but changed latency | [`studies/compute_allocation_calibration/README.md`](studies/compute_allocation_calibration/README.md) |
 
 ## What Works Today
 
@@ -117,8 +117,8 @@ docs/
 
 studies/
   swarm_baselines/              blackboard coordination evidence
-  agent_workflow_feasibility_pilot/
-                                  first 2x2 agent pilot and CPU-contention evidence
+  compute_allocation_calibration/
+                                  CPU compute-allocation and fixed-step evidence
   theory_validation/            theorem/protocol validation evidence
   calibration_design/           evaluator and design calibration evidence
   bp_probe_ablation/            BP four-term probing evidence

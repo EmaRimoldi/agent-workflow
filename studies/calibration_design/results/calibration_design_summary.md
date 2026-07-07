@@ -20,7 +20,7 @@ The calibration design study asks three specific questions:
 
 ### 1. Deterministic evaluation
 
-**The problem**: the agent workflow feasibility pilot and theory validation study used `seed = int(time.time() * 1000) % (2**32)` in train.py, making every training run non-deterministic. The same agent-written code could produce val_bpb ranging from 0.78 to 0.87 in the noise assay. This noise floor was comparable to the signal.
+**The problem**: the first 2x2 pilot and theory validation study used `seed = int(time.time() * 1000) % (2**32)` in train.py, making every training run non-deterministic. The same agent-written code could produce val_bpb ranging from 0.78 to 0.87 in the noise assay. This noise floor was comparable to the signal.
 
 **The fix** (three changes):
 1. Fixed seed: `SEED = 42` with `torch.manual_seed`, `np.random.seed`, `random.seed`
@@ -75,7 +75,7 @@ This is a focused two-cell calibration, not the full 2x2. The goal is to determi
 
 **Figure 1 interpretation**: Panel A shows the best-of-rep distributions. d00 has wider spread (range 0.824-0.926) but lower mean — its best reps (0.824, 0.856) substantially beat d10's best (0.875). d10 is more consistent (4/5 reps at 0.923-0.926, near the baseline) but rarely improves. Panel B shows all 116 individual training runs: both cells have similar bulk distributions, but d00 has a longer left tail (better outliers). Panel C reveals the throughput story: d10 consistently produces more iterations (mean 13.8 vs 9.4), but more attempts don't translate to better results — they're faster but stuck.
 
-**Key surprise**: Memory makes things WORSE, not better. This directly contradicts the agent workflow feasibility pilot and theory validation study's tentative finding that d10 was the best cell. With deterministic evaluation (no noise floor), d00 clearly outperforms d10 on best-of-rep.
+**Key surprise**: Memory makes things WORSE, not better. This directly contradicts the first 2x2 pilot and theory validation study's tentative finding that d10 was the best cell. With deterministic evaluation (no noise floor), d00 clearly outperforms d10 on best-of-rep.
 
 ### 2. The run-9 wall: minimum exploration threshold
 
@@ -155,7 +155,7 @@ The calibration design study did not formally test H1-H6 (the full 2x2 was not c
 
 1. **Deterministic evaluation eliminates noise floor**: val_bpb = 0.811222 perfectly reproducible. Any observed difference is real signal, not noise. This is the single most important methodological fix across all studies.
 
-2. **Memory effect is real but negative**: Cohen's d = 0.66 with deterministic evaluation. Memory stabilizes cost (lower Jensen gap, lower CV) but creates anchoring that prevents bold exploration. This inverts the agent workflow feasibility pilot and theory validation study finding and shows the earlier "d10 is best" was partly noise.
+2. **Memory effect is real but negative**: Cohen's d = 0.66 with deterministic evaluation. Memory stabilizes cost (lower Jensen gap, lower CV) but creates anchoring that prevents bold exploration. This inverts the first 2x2 pilot and theory validation study finding and shows the earlier "d10 is best" was partly noise.
 
 3. **Exploration diversity is the key predictor**: rho = -0.685 (p = 0.029). Replicates that explored 4-5 strategy categories improved; those stuck on 1-2 did not. This is the strongest empirical signal for the G term in the decomposition.
 

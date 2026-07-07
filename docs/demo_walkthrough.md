@@ -49,11 +49,12 @@ This gives the repo a concrete experimental question:
    produced identical `val_bpb = 0.811222`, which means differences can be
    attributed to agent edits rather than training noise.
 
-4. Read the earliest pilot only as historical context:
-   [`studies/agent_workflow_feasibility_pilot/README.md`](../studies/agent_workflow_feasibility_pilot/README.md).
+4. Read why compute allocation had to be controlled:
+   [`studies/compute_allocation_calibration/README.md`](../studies/compute_allocation_calibration/README.md).
 
-   This study built the first 2x2 agent workflow, but it also exposed estimator,
-   CPU-contention, and task-design weaknesses that later studies fixed.
+   This study shows why fixed-time parallel training can look worse simply
+   because each worker completes fewer optimizer updates, and why fixed-step
+   evaluation separates quality from latency.
 
 ## What To Look At Visually
 
@@ -62,6 +63,8 @@ The most useful result figures are:
 - [`studies/baseline_headroom/results/figures/figure-04-recommended-baseline-detail.png`](../studies/baseline_headroom/results/figures/figure-04-recommended-baseline-detail.png)
 - [`studies/bp_probe_ablation/results/ablation__bp-4term-probing__active/figures/design_audit/figure-04-task-ceiling.png`](../studies/bp_probe_ablation/results/ablation__bp-4term-probing__active/figures/design_audit/figure-04-task-ceiling.png)
 - [`studies/calibration_design/results/calibration__2x2-diversity-memory__superseded/figures/figure-01-main-comparison.png`](../studies/calibration_design/results/calibration__2x2-diversity-memory__superseded/figures/figure-01-main-comparison.png)
+- [`studies/compute_allocation_calibration/results/figures/figure-01-fixed-time-compute-loss.png`](../studies/compute_allocation_calibration/results/figures/figure-01-fixed-time-compute-loss.png)
+- [`studies/compute_allocation_calibration/results/figures/figure-02-fixed-step-latency-cost.png`](../studies/compute_allocation_calibration/results/figures/figure-02-fixed-step-latency-cost.png)
 
 ## Runnable Surface
 

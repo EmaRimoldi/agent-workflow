@@ -1,8 +1,12 @@
-# Fixed-Step CPU Contention Follow-Up
+# Fixed-Step CPU Pair Benchmark
 
 ## Purpose
 
-The agent workflow feasibility pilot already included a resource-contention benchmark that ran identical `train.py` jobs under a fixed 2-second wall-clock budget. That benchmark answered one important question: when multiple training jobs share the same CPU budget, do parallel jobs complete fewer gradient updates and therefore produce worse validation loss?
+The compute-allocation calibration already includes a fixed-time benchmark that
+ran identical `train.py` jobs under a fixed 2-second wall-clock budget. That
+benchmark answered one important question: when multiple training jobs share the
+same CPU budget, do parallel jobs complete fewer gradient updates and therefore
+produce worse validation loss?
 
 This follow-up benchmark answers the complementary question: if each training job is forced to complete the same number of gradient updates, how much wall-clock time is lost to CPU contention? This distinction matters for interpreting the 2x2 agent experiments. Under a fixed-time evaluator, parallel agents can be penalized because each `train.py` receives less CPU time and completes fewer steps. Under a fixed-step evaluator, the number of gradient updates is equalized, so contention appears as slower evaluations rather than lower-quality evaluations.
 

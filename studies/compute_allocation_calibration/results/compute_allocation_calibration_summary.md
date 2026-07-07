@@ -1,14 +1,51 @@
-# Agent Workflow Feasibility Pilot
+# Compute Allocation Calibration Summary
 
 **Status**: Archived
 **Period**: April 2026 (first study)
-**Objective**: Build the first end-to-end agent workflow experiment and test whether the Beneventano-Poggio (BP) four-term decomposition can be measured on LLM-driven autonomous agents.
+**Objective**: show why parallel agent evaluations need fixed-step evaluation or explicit compute accounting before claims about agent quality.
 
 ---
 
+## Main Finding
+
+The first 2x2 agent pilot was not a clean test of parallel agent quality because
+parallel training jobs shared the same CPU. Under fixed-time evaluation, more
+concurrent training workers complete fewer optimizer updates and produce worse
+validation loss. Under fixed-step evaluation, validation loss stays fixed because
+every worker completes the same number of updates; the cost appears as
+additional wall-clock latency.
+
+This study therefore supports a protocol rule used by later studies:
+
+> Compare agent workflows under fixed-step evaluation, or report compute
+> allocation explicitly. Do not interpret fixed-time CPU-parallel runs as pure
+> evidence about agent decision quality.
+
+## Paper Figures
+
+![Fixed-time compute loss](figures/figure-01-fixed-time-compute-loss.png)
+
+**Figure 1** shows the fixed-time confound directly: increasing concurrent
+training workers reduces optimizer updates per worker, and validation loss
+worsens at the same time.
+
+![Fixed-step latency cost](figures/figure-02-fixed-step-latency-cost.png)
+
+**Figure 2** shows the fixed-step control: all workers complete 300 optimizer
+updates and reach the same validation loss. Parallelism changes wall-clock time,
+not quality.
+
+![Throughput efficiency](figures/figure-03-throughput-efficiency.png)
+
+**Figure 3** shows the capacity curve: throughput rises sublinearly and parallel
+efficiency falls as workers contend for CPU.
+
 ## Research Question
 
-Can we empirically measure how parallelism and memory affect the performance of autonomous LLM agents, and can the BP framework's mathematical decomposition explain the observed differences?
+Can we empirically measure how parallelism and memory affect autonomous LLM
+agents without confusing agent behavior with compute allocation? Secondarily,
+can the BP framework's mathematical decomposition explain the observed
+differences?
 
 **Background**: Beneventano and Poggio proposed a theoretical framework that decomposes the performance gain (or loss) of an agent configuration relative to a baseline into four interpretable terms:
 
@@ -108,7 +145,9 @@ This lets each agent see what the other has tried, ideally reducing duplicated e
 
 **No memory (d00, d01)**: The agent receives only its current budget status and task description. Previous attempts are visible only through the growing conversation context, which degrades as the context window fills up.
 
-Three experiment classes were run in the original study, and one fixed-step follow-up benchmark was later added to clarify the CPU contention interpretation:
+The archived evidence now has four bundles: the original 2x2 agent pilot,
+exploratory runs, a fixed-time compute-allocation benchmark, and a fixed-step
+pair benchmark.
 
 ### 1. Pilot 2x2 feasibility — 12 runs (4 cells x 3 reps)
 
@@ -118,7 +157,7 @@ Each agent is an LLM (claude-haiku-4-5) that autonomously writes and trains smal
 
 Same 4 modes as the pilot, but with a shorter **10-minute budget** (600s) and 120s per training attempt. All configs use claude-haiku-4-5. The 8 runs are: 5x single-long (no memory, 1 agent), 1x single-memory (external memory, 1 agent), 1x parallel (2 agents, no memory), 1x parallel-shared (2 agents, shared memory). The purpose was rapid iteration to explore different hyperparameter choices before committing to the full pilot.
 
-### 3. Resource contention evaluation — scaling study N=1..8
+### 3. Fixed-Time Compute-Allocation Scaling — N=1..8
 
 In the pilot, parallel cells (d01/d11) showed worse val_bpb than single cells (d00/d10). But is that because parallelism itself is unhelpful, or because two training processes running simultaneously on the same CPU compete for compute and each one gets fewer gradient steps done?
 
@@ -128,13 +167,13 @@ The experiment launches N identical `train.py` processes simultaneously (N=1,2,4
 
 Note: the val_bpb values here (~1.9) are much worse than the pilot (~0.8) because the training budget is 2 seconds vs 120 seconds — only ~19 gradient steps vs hundreds. The absolute values don't matter; what matters is the **relative degradation** as N increases.
 
-### 4. Fixed-step CPU contention follow-up — N=2
+### 4. Fixed-Step CPU Pair Benchmark — N=2
 
 A later follow-up benchmark was added to answer the complementary question that the fixed-time scaling study could not answer: if every `train.py` process is forced to complete the same number of gradient updates, does CPU parallelism still hurt validation quality, or does it only make each evaluation slower?
 
 This matters because the 2x2 agent design can be run with either fixed-time or fixed-step evaluators. Under a fixed-time evaluator, parallel jobs can produce worse results simply because each job completes fewer gradient steps in the same wall-clock budget. Under a fixed-step evaluator, the gradient-update count is equalized, so any remaining contention appears as wall-clock overhead instead of a direct quality penalty.
 
-The follow-up used the deterministic calibration-design training workspace, CPU-only execution, and `MAX_STEPS = 300` for every worker. Results are stored in `fixed_step_cpu_contention_followup/`.
+The follow-up used the deterministic calibration-design training workspace, CPU-only execution, and `MAX_STEPS = 300` for every worker. Results are stored in `fixed_step_cpu_pair_benchmark/`.
 
 | Condition | Group wall time | Mean worker time | Steps | Mean val_bpb |
 |-----------|-----------------|------------------|-------|--------------|
@@ -220,9 +259,12 @@ All exploratory runs use claude-haiku-4-5, 10-minute budget, 120s per training a
 
 **Figure 3 interpretation**: The standout is single-memory at 0.739, well left of the d00 pilot baseline (dashed line). However, this is a single unreplicated run — it could be an outlier. The two successful single-long runs bracket the baseline (0.762 and 0.816), showing high variance even within the same configuration. Both parallel modes sit to the right of the baseline, reinforcing the contention penalty. A critical limitation: the 3 missing single-long runs introduce survivorship bias — we only see results from runs where the agent happened to produce valid training output. The true single-long distribution may be worse than shown.
 
-### 3. Resource Contention
+### 3. Fixed-Time Compute-Allocation Scaling
 
-This study isolates CPU contention by running identical 2-second training tasks (not the full agent loop). On a 10-core CPU machine, it measures how throughput and training quality change as N concurrent processes compete for CPU and memory bandwidth.
+This benchmark isolates compute allocation by running identical 2-second
+training tasks, not the full agent loop. On a 10-core CPU machine, it measures
+how throughput, optimizer updates, and validation loss change as N concurrent
+processes share CPU resources.
 
 | N agents | Policy      | Wall time (s) | Speedup | Efficiency | Mean steps | Mean val_bpb |
 |----------|-------------|---------------|---------|------------|------------|-------------|
@@ -239,11 +281,17 @@ This study isolates CPU contention by running identical 2-second training tasks 
 - Speedup is strictly sublinear: N=8 yields only ~3.2x throughput (ideal would be 8x).
 - Training quality degrades monotonically with N: val_bpb worsens by ~13% from N=1 to N=8 (default policy). Each agent completes fewer gradient steps in the same wall-clock budget.
 - Partitioned thread policy (dividing cores equally: 5 per agent at N=2, 1 per agent at N=8) provides modest quality improvements at N=2 (no degradation) but the advantage diminishes at higher N.
-- This is the key confound for the 2x2 design: parallel cells (d01, d11) face resource contention that single cells (d00, d10) do not. Any quality difference between parallel and single cells conflates the parallelism effect with the contention effect.
+- This is the key confound for the 2x2 design: parallel cells (d01, d11)
+  receive a different effective compute allocation than single cells (d00,
+  d10). Any quality difference between parallel and single cells conflates the
+  workflow effect with the compute-allocation effect.
 
-![Resource contention](figures/fig02_resource_contention.png)
-
-**Figure 2 interpretation**: The left panel shows both policies diverge sharply from the ideal linear speedup after N=2, plateauing around 3x at N=8. The right panel reveals the cost: default-policy val_bpb degrades nearly linearly with N (~0.033 per doubling). The partitioned policy flattens the curve at N=2 (no quality loss) but converges with default at higher N, where there simply aren't enough cores per agent (1 core at N=8 vs 10 at N=1). The key takeaway is that for the pilot's N=2 (d01/d11), the contention penalty is real but modest (~2% val_bpb degradation with default policy, near-zero with partitioning). This means the d01/d11 quality gap vs d00/d10 in the pilot is partly but not entirely explained by contention — some signal may remain.
+The current presentation figures for this result are
+[`figure-01-fixed-time-compute-loss.png`](figures/figure-01-fixed-time-compute-loss.png)
+and
+[`figure-03-throughput-efficiency.png`](figures/figure-03-throughput-efficiency.png).
+The older `fig02_resource_contention.png` plot is retained only as historical
+provenance.
 
 **Fixed-step follow-up**: A later N=2 benchmark held gradient updates fixed at 300 steps per worker. In that setting, two concurrent CPU training jobs reached the same val_bpb as sequential jobs, but each worker slowed down. The best tested setting, 2 parallel processes with 4 threads each, gave a 1.75x group-level speedup over two sequential evaluations while slowing each worker by 14.2%. This clarifies the fixed-time result: under fixed-time evaluation, parallelism hurts quality because it reduces completed steps; under fixed-step evaluation, it mainly increases evaluation latency.
 

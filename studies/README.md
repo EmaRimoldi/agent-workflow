@@ -35,8 +35,8 @@ Read the studies in this order if you want the cleanest narrative:
    design audit that motivated the probe redesign.
 4. [`theory_validation/`](theory_validation/) - theorem, estimator, and protocol
    audit.
-5. [`agent_workflow_feasibility_pilot/`](agent_workflow_feasibility_pilot/) -
-   first 2x2 agent pilot and CPU-contention evidence.
+5. [`compute_allocation_calibration/`](compute_allocation_calibration/) -
+   fixed-time vs fixed-step compute-allocation evidence.
 6. [`swarm_baselines/`](swarm_baselines/) - historical swarm context.
 
 ## Study Map
@@ -131,27 +131,26 @@ the reading path unclear.
 **Read first**:
 [`theory_validation/results/README.md`](theory_validation/results/README.md).
 
-### `agent_workflow_feasibility_pilot/`
+### `compute_allocation_calibration/`
 
-**Status**: archived first agent-workflow study.
+**Status**: archived compute-allocation calibration.
 
-**Question**: Can a 2x2 agent workflow experiment be run end-to-end, and can the
-BP decomposition be measured on real LLM-driven AutoResearch runs?
+**Question**: When agent workflows run training jobs in parallel on shared CPU,
+are we measuring agent quality or the compute budget each worker actually
+receives?
 
-**What was run**: an early 2x2 pilot over single, memory, parallel, and
-parallel-shared modes; 3 reps per cell; token and wall-clock accounting;
-mode-labeling; decomposition estimates; trajectory plots.
+**What was run**: a fixed-time CPU scaling benchmark at N=1,2,4,8; a fixed-step
+N=2 pair benchmark; and the original 2x2 agent pilot that exposed the confound.
 
-**Main result**: The infrastructure worked and produced the first evidence
-bundle, but the pilot exposed CPU contention, unstable first edits, and sparse
-accepted-edit data. It is useful as design evidence, not as a final result.
+**Main result**: Fixed-time parallel training completed fewer optimizer updates
+and validation loss worsened. Fixed-step evaluation held validation loss
+constant while exposing the real cost as worker latency.
 
-**Caveat**: Treat this as historical feasibility evidence. It explains why the
-later deterministic evaluator, starting-model calibration, and probe ablation
-were needed.
+**Caveat**: The evidence is CPU-only. It is still the methodological reason
+later agent comparisons use fixed-step evaluation or explicit compute accounting.
 
 **Read first**:
-[`agent_workflow_feasibility_pilot/README.md`](agent_workflow_feasibility_pilot/README.md).
+[`compute_allocation_calibration/README.md`](compute_allocation_calibration/README.md).
 
 ### `swarm_baselines/`
 

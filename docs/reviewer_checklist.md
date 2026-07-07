@@ -31,7 +31,7 @@ to know whether AgentOps Lab is real, inspectable, and honest about its limits.
 | The benchmark starting model was calibrated before agent claims. | `studies/baseline_headroom/README.md` | 161 controlled evaluations; 1170-update runs are the decision evidence. |
 | Training noise can be removed from the evaluator. | `studies/calibration_design/results/calibration_design_summary.md` | Five identical baseline runs at `val_bpb = 0.811222`. |
 | Shared memory can reduce destructive exploration in this substrate. | `studies/bp_probe_ablation/results/probe_ablation_summary.md` | P12 beats P11 on best and mean `val_bpb`, with `p < 0.001`. |
-| The earliest pilot exposed real design flaws. | `studies/agent_workflow_feasibility_pilot/README.md` | Archived as historical feasibility evidence, not overclaimed. |
+| Compute allocation can confound fixed-time parallel evaluation. | `studies/compute_allocation_calibration/README.md` | Fixed-time trend plus fixed-step control. |
 | The theory layer is not overclaimed. | `studies/theory_validation/results/README.md` | Explicitly states cleaner theory but insufficient empirical validation. |
 
 ## Reproducibility
