@@ -7,6 +7,7 @@ campaign. It is an imported evidence bundle, not a raw run archive.
 
 - Processed accounting tables and JSON reports under `results/accounting/`.
 - Paper-facing figures under `results/figures/`.
+- Minimal raw run files under `raw/`.
 - The submitted campaign README and config snapshot under `source/`.
 - Figure/artifact helper scripts under `source/scripts/`.
 
@@ -33,17 +34,22 @@ three workload families and three worker aliases. The preserved processed file
 
 ## What Is Not Included
 
-- Raw `runs/` directories.
-- `runs_balanced_n30/` symlinks.
+- Full raw `runs/` directories.
+- `runs_balanced_n30/` symlink tree.
 - Cluster logs and Slurm output.
 - Provider transcripts or live-agent workspaces.
 
-Those files are either large, environment-bound, or known to contain broken
-absolute symlinks in the inspected workspace.
+The repository keeps a minimal raw bundle instead. The full run tree is larger
+and environment-bound, and `runs_balanced_n30/` contained broken absolute
+symlinks in the inspected workspace.
+
+Raw coverage is documented in `raw/README.md` and
+`raw/manifests/raw_import_summary.json`.
 
 ## Read First
 
 - `results/accounting/threeworker_balanced_n30_frontier_summary.csv`
 - `results/accounting/threeworker_threshold_summary.csv`
 - `results/accounting/threeworker_router_gain_summary.csv`
+- `raw/manifests/raw_run_inventory.csv`
 - `source/campaign_README.md`
