@@ -1,124 +1,89 @@
 # Swarm Baselines
 
-**Status**: historical context study
+**Status**: historical evidence study
 **Period**: April 2026
-**Purpose**: preserve early evidence that blackboard-style coordination can make
-two autonomous agents search better than independent parallel agents.
+**Question**: does explicit shared memory help two code-editing agents search
+better than two independent agents running in parallel?
 
-This study is not a normalized BP `d00` / `d10` / `d01` / `d11` experiment. It
-uses an older, stronger swarm protocol: two agents run in isolated workspaces
-but coordinate through a shared blackboard with `claim`, `result`, `best`,
-`insight`, and `hypothesis` entries.
+## Task
 
-## What Was Being Tested
+The task is AutoResearch. Each agent uses the Claude Code CLI to edit
+`train.py`, launch a bounded training attempt, read the resulting validation
+BPB, and keep searching for code edits that lower validation BPB. Lower
+`val_bpb` means a better candidate.
 
-The task was an AutoResearch optimization loop. Each agent used Claude Code to
-edit `train.py`, launch training attempts, observe validation BPB, and keep
-searching for a lower validation BPB. Lower `val_bpb` is better.
+The swarm variant gives two isolated agents a shared blackboard. Agents can
+publish claims, results, best code, insights, and hypotheses while the run is
+still active. The independent-parallel baseline launches two agents on the same
+task but lets them communicate only after both processes finish.
 
-The preserved swarm model-comparison runs used:
+## What Was Run
 
-- 2 agents;
-- 1 GPU per agent, 2 GPUs total;
-- 120 minutes per agent;
-- 300 seconds per training attempt;
-- a shared blackboard in swarm mode.
+The preserved model-comparison runs contain four two-agent swarm experiments:
 
-Two agents were used because this was the smallest coordinated setup that could
-test cross-agent memory while staying within the preserved compute envelope of
-2 GPUs for roughly 2 hours.
+- Haiku 4.5 run 1: 27 successful training attempts in 119.2 minutes, best
+  `val_bpb = 1.041477`.
+- Haiku 4.5 run 2: 28 successful training attempts in 120.0 minutes, best
+  `val_bpb = 1.044341`.
+- Sonnet 4.6: 29 successful training attempts in 124.8 minutes, best
+  `val_bpb = 1.044216`.
+- Opus 4.6: 22 successful training attempts in 119.7 minutes, best
+  `val_bpb = 1.044304`.
 
-## Clean Experiment Names
+Each swarm run used 2 agents, 120 minutes per agent, 300 seconds per training
+attempt, and 1 GPU per agent, for 2 GPUs total. The exact GPU model/type is not
+preserved in the curated artifacts.
 
-| Canonical name | Original ID | Role | Preserved evidence |
-| --- | --- | --- | --- |
-| `independent_parallel_baseline` | `experiment_exp_20260401_013535` | control condition with two independent agents and no shared memory | summary only |
-| `haiku_swarm_run_1` | `experiment_exp_20260405_022850` | first Haiku 4.5 two-agent swarm run | deep-dive figures, model-comparison row, swarm-vs-parallel row |
-| `haiku_swarm_run_2` | `experiment_exp_20260405_124604` | second Haiku 4.5 two-agent swarm run | model-comparison row, swarm-vs-parallel row |
-| `sonnet_swarm_run` | `experiment_exp_20260406_024115` | Sonnet 4.6 two-agent swarm run | model-comparison row |
-| `opus_swarm_run` | `experiment_exp_20260406_044120` | Opus 4.6 two-agent swarm run | model-comparison row |
-
-There are five unique experiment runs represented here. The often-mentioned
-`106 successful runs` are not 106 experiments. They are 106 successful training
-attempts inside the four swarm model-comparison experiments:
-
-| Experiment | Model | Duration | Successful training attempts | Best `val_bpb` |
-| --- | --- | ---: | ---: | ---: |
-| `haiku_swarm_run_1` | Haiku 4.5 | 119.2 min | 27 | 1.041477 |
-| `haiku_swarm_run_2` | Haiku 4.5 | 120.0 min | 28 | 1.044341 |
-| `sonnet_swarm_run` | Sonnet 4.6 | 124.8 min | 29 | 1.044216 |
-| `opus_swarm_run` | Opus 4.6 | 119.7 min | 22 | 1.044304 |
-
-The model-comparison durations are comparable: all were run with the same
-120-minute-per-agent budget. The preserved Sonnet artifact ran about 4.8
-minutes over the nominal target; this is small enough for a historical comparison
-but should be normalized in future confirmatory runs.
-
-The independent-parallel baseline is less complete: the preserved summary keeps
-agent-level and system-level best BPB, but not duration or training-attempt
-counts.
+The phrase "106 successful runs" in the archived material means 106 valid
+training attempts across those four swarm experiments. It does not mean 106
+separate experiments.
 
 ## Main Results
 
-1. **Swarm coordination beat independent parallelization in the preserved
-   comparison.** The independent-parallel baseline reached system-best
-   `val_bpb = 1.113130`; the two Haiku swarm runs reached `1.041477` and
-   `1.044341`.
+The strongest preserved comparison is simple: independent parallelization
+reached `val_bpb = 1.113130`, while the two Haiku swarm runs reached
+`1.041477` and `1.044341`.
 
-2. **Model choice mattered less than iteration speed.** Haiku, Sonnet, and Opus
-   all ended in a tight `val_bpb` band around `1.041-1.044`. Haiku had the best
-   value and the only replicated model result; Opus was slower and completed
-   fewer training attempts.
+The model-comparison runs also show that Haiku, Sonnet, and Opus ended in a
+tight quality band around `1.041-1.044`. Opus completed fewer attempts in the
+same wall-clock budget, which makes its similar final quality useful but not
+evidence that Opus was a more efficient search worker in this setup.
 
-3. **The useful mechanism is the blackboard, not hidden shared context.** Agents
-   were separate Claude Code subprocesses with separate worktrees. Coordination
-   happened because both could read and write a locked JSONL blackboard and
-   explicitly publish hypotheses, results, and best code.
+## Figures
 
-## Current Figures
+![Validation BPB over time](results/figures/figure-01-validation-bpb-over-time.png)
 
-![Experiment scorecards](results/figures/figure-01-experiment-scorecards.png)
-
-**Figure 1**: the five preserved experiment runs with readable names. The
-parallel baseline is marked as a partial artifact because its raw run directory
-was not preserved here.
-
-![Performance comparison](results/figures/figure-02-performance-comparison.png)
-
-**Figure 2**: swarm runs reached substantially lower validation BPB than the
-independent-parallel baseline.
-
-![Budget and throughput](results/figures/figure-03-budget-and-throughput.png)
-
-**Figure 3**: the four model-comparison swarm runs used the same 120-minute
-agent budget; faster agents completed more training attempts.
+**Figure 1**: best validation BPB reached by the preserved swarm runs under the
+two-hour budget. The plot uses final best values, durations, and attempt counts
+from the preserved summaries; full per-trial validation curves are not
+available for all four runs.
 
 ![Swarm shared memory architecture](results/figures/figure-04-swarm-memory-architecture.png)
 
-**Figure 4**: in swarm mode, both agents have isolated workspaces but coordinate
-through a shared JSONL blackboard protected by file locks.
+**Figure 4**: swarm mode launches two isolated Claude Code workers, gives each
+one its own workspace and GPU slot, and coordinates search through a shared
+JSONL blackboard.
 
 ![Independent parallel architecture](results/figures/figure-05-independent-parallel-architecture.png)
 
-**Figure 5**: in the independent-parallel baseline, agents run side-by-side with
-no shared context, no shared files, and no mid-run merge.
+**Figure 5**: independent parallel mode launches two isolated workers without a
+shared channel during the run. The collector compares outputs only after both
+agents finish.
 
 ## How Agents Were Spawned
 
-The current implementation runs each agent as an isolated Python subprocess.
+The current implementation launches each agent as an isolated Python subprocess.
 Inside that subprocess, the agent is invoked through the Claude Code CLI using
 `claude --print`.
 
 - Independent parallel mode creates one isolated workspace per agent, launches
-  all agents simultaneously, and collects results only after all agents finish.
-- Swarm mode also creates one isolated workspace per agent, but additionally
-  installs `coordinator.py`, `coordinator_local.py`, prompt files, and a
-  `.swarm_env` pointing to the shared blackboard.
-- The shared blackboard is an append-only JSONL file. Writes use exclusive
-  `fcntl` locks; reads use shared locks. This prevents corruption when multiple
-  agent processes write concurrently.
+  all agents simultaneously, and collects results after completion.
+- Swarm mode also creates one isolated workspace per agent, then installs the
+  coordinator tools and a `.swarm_env` file pointing to the shared blackboard.
+- The blackboard is an append-only JSONL file. Writes use exclusive `fcntl`
+  locks; reads use shared locks, so concurrent agents do not corrupt the file.
 
-Useful implementation references:
+Implementation references:
 
 - parallel process spawning: `src/agentops_lab/orchestrator.py`;
 - independent agent subprocess wrapper:
@@ -128,23 +93,24 @@ Useful implementation references:
 - blackboard implementation: `src/agentops_lab/swarm/shared_memory.py`;
 - workspace blackboard tool installation: `src/agentops_lab/swarm/workspace.py`.
 
-## File Map
+## Evidence Files
 
-| Path | Meaning |
-| --- | --- |
-| `results/figures/` | current public figures generated by `scripts/plot_swarm_baselines.py` |
-| `results/analysis/haiku_swarm_run_1_deep_dive/` | visual deep dive into `haiku_swarm_run_1` |
-| `results/analysis/model_comparison/` | Haiku/Sonnet/Opus model comparison artifacts |
-| `results/analysis/swarm_vs_independent_parallel/` | comparison between independent parallel baseline and Haiku swarm runs |
-| `results/analysis/analyze_swarm.py` | archived script for analyzing one raw swarm run |
+- `results/figures/`: public figures generated by
+  `scripts/plot_swarm_baselines.py`.
+- `results/analysis/haiku_swarm_run_1_deep_dive/`: detailed visual analysis for
+  one historical Haiku swarm run.
+- `results/analysis/model_comparison/`: Haiku/Sonnet/Opus comparison summaries,
+  CSV/JSON tables, and archived analysis scripts.
+- `results/analysis/swarm_vs_independent_parallel/`: preserved comparison
+  between the independent-parallel baseline and two Haiku swarm runs.
 
 ## Completeness
 
-This is a strong historical evidence bundle, but not a complete reproducibility
+This is a useful historical evidence bundle, not a complete reproducibility
 bundle. The curated summaries, CSV/JSON result tables, scripts, and figures are
 preserved. The raw `results/swarm/runs/` directories were not present when the
-artifacts were moved, so some scripts document provenance but cannot be rerun
-inside this folder without restoring those raw runs.
+artifacts were moved, so some archived scripts document provenance but cannot be
+rerun inside this folder without restoring those raw runs.
 
 Treat the result as design evidence for blackboard coordination, not as a final
 confirmatory benchmark.

@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 from pathlib import Path
-import textwrap
 
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyArrowPatch, Rectangle
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -17,78 +16,48 @@ BLUE = "#2563eb"
 ORANGE = "#f97316"
 GREEN = "#16a34a"
 PURPLE = "#7c3aed"
-GRAY = "#64748b"
-LIGHT_GRAY = "#f1f5f9"
+RED = "#dc2626"
+SLATE = "#334155"
+MUTED = "#64748b"
+GRID = "#e2e8f0"
 DARK = "#111827"
-GRID = "#e5e7eb"
+PAPER = "#f8fafc"
 
 MODEL_BASELINE_BPB = 1.1020746984708296
+INDEPENDENT_PARALLEL_BPB = 1.113130
 
-EXPERIMENTS = [
+SWARM_RUNS = [
     {
-        "key": "independent_parallel_baseline",
-        "title": "Independent\nparallel baseline",
-        "mode": "parallel",
-        "model": "historical",
-        "best_bpb": 1.113130,
-        "agent0_best": 1.113884,
-        "agent1_best": 1.113130,
-        "runs": None,
-        "duration_min": None,
-        "color": GRAY,
-        "status": "partial artifact",
-    },
-    {
-        "key": "haiku_swarm_run_1",
-        "title": "Haiku\nswarm run 1",
-        "mode": "swarm",
+        "label": "Haiku run 1",
         "model": "Haiku 4.5",
         "best_bpb": 1.041477,
-        "agent0_best": 1.047929,
-        "agent1_best": 1.041477,
         "runs": 27,
         "duration_min": 119.2,
         "color": ORANGE,
-        "status": "complete summary",
     },
     {
-        "key": "haiku_swarm_run_2",
-        "title": "Haiku\nswarm run 2",
-        "mode": "swarm",
+        "label": "Haiku run 2",
         "model": "Haiku 4.5",
         "best_bpb": 1.044341,
-        "agent0_best": 1.044341,
-        "agent1_best": 1.050358,
         "runs": 28,
         "duration_min": 120.0,
-        "color": ORANGE,
-        "status": "complete summary",
+        "color": "#fb923c",
     },
     {
-        "key": "sonnet_swarm_run",
-        "title": "Sonnet\nswarm run",
-        "mode": "swarm",
+        "label": "Sonnet",
         "model": "Sonnet 4.6",
         "best_bpb": 1.044216,
-        "agent0_best": 1.044662,
-        "agent1_best": 1.044216,
         "runs": 29,
         "duration_min": 124.8,
         "color": BLUE,
-        "status": "complete summary",
     },
     {
-        "key": "opus_swarm_run",
-        "title": "Opus\nswarm run",
-        "mode": "swarm",
+        "label": "Opus",
         "model": "Opus 4.6",
         "best_bpb": 1.044304,
-        "agent0_best": 1.044304,
-        "agent1_best": 1.047083,
         "runs": 22,
         "duration_min": 119.7,
         "color": PURPLE,
-        "status": "complete summary",
     },
 ]
 
@@ -102,14 +71,19 @@ def style() -> None:
             "axes.labelcolor": DARK,
             "axes.titlecolor": DARK,
             "axes.grid": True,
+            "axes.axisbelow": True,
             "grid.color": GRID,
             "grid.linewidth": 0.8,
+            "font.family": "DejaVu Sans",
             "font.size": 11,
             "axes.titlesize": 13,
             "axes.labelsize": 11,
             "xtick.color": "#374151",
             "ytick.color": "#374151",
-            "legend.frameon": False,
+            "legend.frameon": True,
+            "legend.facecolor": "white",
+            "legend.edgecolor": "#cbd5e1",
+            "legend.framealpha": 0.96,
             "savefig.bbox": "tight",
         }
     )
@@ -117,313 +91,332 @@ def style() -> None:
 
 def save(fig: plt.Figure, stem: str) -> None:
     FIGURES.mkdir(parents=True, exist_ok=True)
-    fig.savefig(FIGURES / f"{stem}.png", dpi=220)
+    fig.savefig(FIGURES / f"{stem}.png", dpi=260)
     fig.savefig(FIGURES / f"{stem}.pdf")
     plt.close(fig)
 
 
-def wrap(text: str, width: int = 30) -> str:
-    return "\n".join(textwrap.wrap(text, width=width))
-
-
 def add_box(
     ax: plt.Axes,
-    xy: tuple[float, float],
-    wh: tuple[float, float],
+    x: float,
+    y: float,
+    w: float,
+    h: float,
     title: str,
     body: str,
     color: str,
-    title_size: int = 12,
-    body_size: int = 10,
+    fill: str = "white",
 ) -> None:
-    x, y = xy
-    w, h = wh
-    rect = Rectangle((x, y), w, h, linewidth=1.4, edgecolor=color, facecolor="white")
-    ax.add_patch(rect)
+    box = FancyBboxPatch(
+        (x, y),
+        w,
+        h,
+        boxstyle="round,pad=0.025,rounding_size=0.055",
+        linewidth=1.5,
+        edgecolor=color,
+        facecolor=fill,
+    )
+    ax.add_patch(box)
     ax.text(
         x + w / 2,
-        y + h - 0.08,
+        y + h - 0.17,
         title,
         ha="center",
         va="top",
-        fontsize=title_size,
+        fontsize=12,
         fontweight="bold",
         color=DARK,
     )
     ax.text(
         x + w / 2,
-        y + h - 0.26,
+        y + h - 0.47,
         body,
         ha="center",
         va="top",
-        fontsize=body_size,
+        fontsize=10,
         color="#374151",
-        linespacing=1.3,
+        linespacing=1.25,
     )
 
 
-def arrow(
+def add_arrow(
     ax: plt.Axes,
     start: tuple[float, float],
     end: tuple[float, float],
-    color: str = GRAY,
-    dashed: bool = False,
+    color: str,
     both: bool = False,
+    dashed: bool = False,
 ) -> None:
-    patch = FancyArrowPatch(
-        start,
-        end,
-        arrowstyle="<->" if both else "-|>",
-        mutation_scale=16,
-        linewidth=1.6,
-        linestyle="--" if dashed else "-",
-        color=color,
-    )
-    ax.add_patch(patch)
-
-
-def figure_experiment_scorecards() -> None:
-    fig, axes = plt.subplots(1, 5, figsize=(16, 4.6), constrained_layout=True)
-    fig.suptitle(
-        "Historical experiments represented in swarm baselines",
-        fontsize=16,
-        y=1.04,
+    ax.add_patch(
+        FancyArrowPatch(
+            start,
+            end,
+            arrowstyle="<->" if both else "-|>",
+            mutation_scale=17,
+            linewidth=1.8,
+            linestyle="--" if dashed else "-",
+            color=color,
+            shrinkA=2,
+            shrinkB=2,
+        )
     )
 
-    for ax, exp in zip(axes, EXPERIMENTS):
-        ax.set_axis_off()
-        ax.add_patch(
-            Rectangle(
-                (0.03, 0.03),
-                0.94,
-                0.94,
-                linewidth=1.6,
-                edgecolor=exp["color"],
-                facecolor="white",
-            )
-        )
-        ax.text(
-            0.5,
-            0.88,
-            exp["title"],
-            ha="center",
-            va="center",
-            fontsize=13,
-            fontweight="bold",
-            color=DARK,
-        )
-        ax.text(0.5, 0.69, f"mode: {exp['mode']}", ha="center", fontsize=10, color="#374151")
-        ax.text(0.5, 0.59, f"model: {exp['model']}", ha="center", fontsize=10, color="#374151")
-        duration = (
-            f"{exp['duration_min']:.1f} min"
-            if exp["duration_min"] is not None
-            else "not preserved"
-        )
-        runs = f"{exp['runs']}" if exp["runs"] is not None else "not preserved"
-        ax.text(0.5, 0.48, f"duration: {duration}", ha="center", fontsize=10, color="#374151")
-        ax.text(0.5, 0.38, f"training attempts: {runs}", ha="center", fontsize=10, color="#374151")
-        ax.text(0.5, 0.25, f"best validation BPB\n{exp['best_bpb']:.6f}", ha="center", fontsize=12, color=DARK)
-        ax.text(0.5, 0.10, exp["status"], ha="center", fontsize=9, color=GRAY)
 
-    save(fig, "figure-01-experiment-scorecards")
-
-
-def figure_performance_comparison() -> None:
-    fig, ax = plt.subplots(figsize=(10.8, 5.4), constrained_layout=True)
-    labels = [e["title"].replace("\n", " ") for e in EXPERIMENTS]
-    values = [e["best_bpb"] for e in EXPERIMENTS]
-    colors = [e["color"] for e in EXPERIMENTS]
-    y = list(range(len(EXPERIMENTS)))
-
-    for idx, value in enumerate(values):
-        ax.hlines(idx, xmin=1.035, xmax=value, color="#e5e7eb", linewidth=2.0)
-    ax.scatter(values, y, color=colors, s=170, zorder=3, edgecolor="white", linewidth=1.2)
-    ax.axvline(MODEL_BASELINE_BPB, color="#94a3b8", linestyle="--", linewidth=1.5, label="model comparison baseline")
-    ax.set_yticks(y)
-    ax.set_yticklabels(labels)
-    ax.invert_yaxis()
-    ax.set_xlabel("Best validation BPB (lower is better)")
-    ax.set_title("Swarm runs reached lower validation BPB than the independent-parallel baseline")
-    ax.set_xlim(1.035, 1.120)
-    ax.grid(axis="y", visible=False)
-    ax.legend(loc="lower right")
-
-    for idx, value in enumerate(values):
-        ax.text(value + 0.0012, idx, f"{value:.6f}", va="center", fontsize=10, color=DARK)
-
-    save(fig, "figure-02-performance-comparison")
-
-
-def figure_budget_comparability() -> None:
-    swarm = [e for e in EXPERIMENTS if e["mode"] == "swarm"]
-    labels = [e["title"].replace("\n", " ") for e in swarm]
-    colors = [e["color"] for e in swarm]
-    durations = [e["duration_min"] for e in swarm]
-    runs = [e["runs"] for e in swarm]
-
-    fig, axes = plt.subplots(1, 2, figsize=(12.8, 4.8), constrained_layout=True)
+def figure_validation_bpb_over_time() -> None:
+    fig, axes = plt.subplots(
+        1,
+        2,
+        figsize=(13.4, 5.25),
+        constrained_layout=True,
+        gridspec_kw={"width_ratios": [1.18, 0.82]},
+    )
 
     ax = axes[0]
-    bars = ax.bar(labels, durations, color=colors, alpha=0.9)
-    ax.axhline(120, color="#94a3b8", linestyle="--", linewidth=1.5, label="target budget")
-    ax.set_ylabel("Experiment duration (minutes)")
-    ax.set_title("A. Model comparison used the same 120 min/agent budget")
-    ax.set_ylim(0, 132)
-    ax.grid(axis="x", visible=False)
-    ax.legend(loc="upper left")
-    for bar, value in zip(bars, durations):
-        ax.text(bar.get_x() + bar.get_width() / 2, value + 2, f"{value:.1f}", ha="center", fontsize=10)
+    ax.axhline(
+        INDEPENDENT_PARALLEL_BPB,
+        color=RED,
+        linestyle="--",
+        linewidth=1.6,
+        label="independent parallel best",
+    )
+    ax.axhline(
+        MODEL_BASELINE_BPB,
+        color=MUTED,
+        linestyle=":",
+        linewidth=1.9,
+        label="initial candidate BPB",
+    )
+
+    for run in SWARM_RUNS:
+        ax.plot(
+            [0, run["duration_min"]],
+            [MODEL_BASELINE_BPB, run["best_bpb"]],
+            color=run["color"],
+            linewidth=2.4,
+            marker="o",
+            markersize=6.2,
+            label=run["label"],
+        )
+        ax.scatter(
+            run["duration_min"],
+            run["best_bpb"],
+            s=105,
+            color=run["color"],
+            edgecolor="white",
+            linewidth=1.0,
+            zorder=4,
+        )
+
+    ax.set_title("Validation BPB reached within the two-hour swarm budget")
+    ax.set_xlabel("Minutes from run start")
+    ax.set_ylabel("Best validation BPB reached (lower is better)")
+    ax.set_xlim(-3, 130)
+    ax.set_ylim(1.035, 1.122)
+    ax.legend(loc="upper right", fontsize=9)
 
     ax = axes[1]
-    bars = ax.bar(labels, runs, color=colors, alpha=0.9)
-    ax.set_ylabel("Valid training attempts")
-    ax.set_title("B. Faster agents complete more evaluator calls")
-    ax.set_ylim(0, 34)
-    ax.grid(axis="x", visible=False)
-    for bar, value in zip(bars, runs):
-        ax.text(bar.get_x() + bar.get_width() / 2, value + 0.7, str(value), ha="center", fontsize=10)
+    for run in SWARM_RUNS:
+        ax.scatter(
+            run["runs"],
+            run["best_bpb"],
+            s=150,
+            color=run["color"],
+            edgecolor="white",
+            linewidth=1.0,
+            label=run["label"],
+        )
 
-    for ax in axes:
-        ax.tick_params(axis="x", labelrotation=18)
+    label_offsets = {
+        "Haiku run 1": (0.35, -0.0042),
+        "Haiku run 2": (-1.15, 0.0030),
+        "Sonnet": (-0.10, 0.0030),
+        "Opus": (0.42, 0.0030),
+    }
+    for run in SWARM_RUNS:
+        dx, dy = label_offsets[run["label"]]
+        ax.text(
+            run["runs"] + dx,
+            run["best_bpb"] + dy,
+            run["label"],
+            fontsize=9.5,
+            color="#374151",
+        )
 
-    save(fig, "figure-03-budget-and-throughput")
+    ax.axhline(INDEPENDENT_PARALLEL_BPB, color=RED, linestyle="--", linewidth=1.6)
+    ax.set_title("Same budget, different number of valid attempts")
+    ax.set_xlabel("Successful training attempts")
+    ax.set_ylabel("Best validation BPB reached")
+    ax.set_xlim(19, 31)
+    ax.set_ylim(1.035, 1.122)
+
+    fig.text(
+        0.5,
+        -0.025,
+        "The four model-comparison artifacts preserve final best values, durations, and attempt counts; raw per-trial validation curves were not preserved for all runs.",
+        ha="center",
+        fontsize=9.4,
+        color=MUTED,
+    )
+
+    save(fig, "figure-01-validation-bpb-over-time")
 
 
 def figure_swarm_memory_architecture() -> None:
-    fig, ax = plt.subplots(figsize=(13.8, 7.0), constrained_layout=True)
+    fig, ax = plt.subplots(figsize=(12.7, 5.7), constrained_layout=True)
     ax.set_axis_off()
     ax.set_xlim(0, 10)
     ax.set_ylim(0, 6)
-    ax.set_title("Swarm mode: two isolated Claude Code agents coordinate through one blackboard", fontsize=16, pad=18)
+    ax.set_title("Swarm mode: two isolated agents coordinate through one blackboard", fontsize=16, pad=14)
 
     add_box(
         ax,
-        (0.35, 3.35),
-        (2.55, 1.35),
+        3.35,
+        4.78,
+        3.30,
+        0.82,
+        "Orchestrator",
+        "spawns two Claude Code CLI subprocesses",
+        SLATE,
+        PAPER,
+    )
+    add_box(
+        ax,
+        0.48,
+        2.83,
+        2.45,
+        1.40,
         "Agent 0",
-        "Claude Code subprocess\nisolated worktree\nGPU 0 worker",
+        "isolated worktree\nGPU slot 0\ntraining attempts",
         BLUE,
     )
     add_box(
         ax,
-        (7.10, 3.35),
-        (2.55, 1.35),
+        7.07,
+        2.83,
+        2.45,
+        1.40,
         "Agent 1",
-        "Claude Code subprocess\nisolated worktree\nGPU 1 worker",
+        "isolated worktree\nGPU slot 1\ntraining attempts",
         ORANGE,
     )
     add_box(
         ax,
-        (3.62, 2.72),
-        (2.76, 1.74),
+        3.48,
+        2.50,
+        3.04,
+        1.80,
         "Shared blackboard",
-        "append-only JSONL\nfcntl file locks\nclaim, result, best,\ninsight, hypothesis",
+        "append-only JSONL\nclaims, results, best code\ninsights and hypotheses",
         GREEN,
-        body_size=9.5,
+        "#f0fdf4",
     )
     add_box(
         ax,
-        (3.70, 0.65),
-        (2.60, 1.10),
+        3.46,
+        0.60,
+        3.08,
+        1.12,
         "Task",
-        "edit train.py\nrun training attempts\nminimize validation BPB",
-        GRAY,
-        title_size=11,
-        body_size=9.5,
+        "edit train.py, run evaluator,\nminimize validation BPB",
+        SLATE,
+        PAPER,
     )
 
-    arrow(ax, (2.90, 4.02), (3.62, 3.62), BLUE, both=True)
-    arrow(ax, (7.10, 4.02), (6.38, 3.62), ORANGE, both=True)
-    arrow(ax, (4.95, 2.72), (4.95, 1.75), GREEN)
-    arrow(ax, (1.63, 3.35), (4.00, 1.48), BLUE)
-    arrow(ax, (8.37, 3.35), (5.90, 1.48), ORANGE)
+    add_arrow(ax, (4.36, 4.78), (1.85, 4.23), BLUE)
+    add_arrow(ax, (5.64, 4.78), (8.15, 4.23), ORANGE)
+    add_arrow(ax, (2.93, 3.48), (3.48, 3.48), BLUE, both=True)
+    add_arrow(ax, (7.07, 3.48), (6.52, 3.48), ORANGE, both=True)
+    add_arrow(ax, (5.00, 2.50), (5.00, 1.72), GREEN)
+    add_arrow(ax, (1.70, 2.83), (4.16, 1.72), BLUE)
+    add_arrow(ax, (8.30, 2.83), (5.84, 1.72), ORANGE)
 
     ax.text(
         5.0,
-        5.32,
-        wrap("Two agents were used because the preserved experiment allocated one GPU per agent: 2 agents, 2 GPUs total, 120 minutes per agent.", 88),
+        0.13,
+        "Preserved setup: 1 GPU per agent, 2 GPUs total, 120 minutes per agent. Exact GPU model/type was not preserved in the curated artifacts.",
         ha="center",
-        va="center",
-        fontsize=11,
-        color="#374151",
-    )
-    ax.text(
-        5.0,
-        0.18,
-        "Coordination is explicit: agents reserve hypotheses, publish results, and pull the global best through the blackboard.",
-        ha="center",
-        fontsize=10.5,
-        color="#374151",
+        fontsize=9.7,
+        color=MUTED,
     )
 
     save(fig, "figure-04-swarm-memory-architecture")
 
 
 def figure_independent_parallel_architecture() -> None:
-    fig, ax = plt.subplots(figsize=(13.8, 6.6), constrained_layout=True)
+    fig, ax = plt.subplots(figsize=(12.7, 5.5), constrained_layout=True)
     ax.set_axis_off()
     ax.set_xlim(0, 10)
     ax.set_ylim(0, 6)
-    ax.set_title("Independent parallel baseline: agents run side-by-side without shared memory", fontsize=16, pad=18)
+    ax.set_title("Independent parallel baseline: same task, no shared memory during the run", fontsize=16, pad=14)
 
     add_box(
         ax,
-        (0.50, 3.45),
-        (2.45, 1.35),
+        3.40,
+        4.78,
+        3.20,
+        0.82,
+        "Orchestrator",
+        "launches two independent workers",
+        SLATE,
+        PAPER,
+    )
+    add_box(
+        ax,
+        0.58,
+        2.72,
+        2.64,
+        1.50,
         "Agent 0",
-        "Claude Code subprocess\nisolated worktree\nown evaluator worker",
+        "Claude Code subprocess\nprivate worktree\nown evaluator",
         BLUE,
     )
     add_box(
         ax,
-        (7.05, 3.45),
-        (2.45, 1.35),
+        6.78,
+        2.72,
+        2.64,
+        1.50,
         "Agent 1",
-        "Claude Code subprocess\nisolated worktree\nown evaluator worker",
+        "Claude Code subprocess\nprivate worktree\nown evaluator",
         ORANGE,
     )
     add_box(
         ax,
-        (3.75, 1.00),
-        (2.50, 1.18),
-        "Post-run collector",
-        "reads both outputs only\nafter agents finish",
-        GRAY,
-        title_size=11,
-        body_size=9.5,
+        3.55,
+        2.86,
+        2.90,
+        1.18,
+        "No mid-run channel",
+        "no shared context\nno shared files\nno blackboard",
+        RED,
+        "#fef2f2",
     )
     add_box(
         ax,
-        (3.55, 4.05),
-        (2.90, 0.90),
-        "No shared channel",
-        "no shared context\nno shared files\nno mid-run merge",
-        "#ef4444",
-        title_size=11,
-        body_size=9.2,
+        3.50,
+        0.62,
+        3.00,
+        1.05,
+        "Post-run collector",
+        "compares final outputs\nafter both agents exit",
+        SLATE,
+        PAPER,
     )
 
-    arrow(ax, (1.72, 3.45), (4.25, 2.18), BLUE)
-    arrow(ax, (8.27, 3.45), (5.75, 2.18), ORANGE)
-    arrow(ax, (2.95, 4.40), (3.55, 4.40), "#ef4444", dashed=True)
-    arrow(ax, (7.05, 4.40), (6.45, 4.40), "#ef4444", dashed=True)
+    add_arrow(ax, (4.34, 4.78), (1.90, 4.22), BLUE)
+    add_arrow(ax, (5.66, 4.78), (8.10, 4.22), ORANGE)
+    add_arrow(ax, (1.90, 2.72), (4.25, 1.67), BLUE)
+    add_arrow(ax, (8.10, 2.72), (5.75, 1.67), ORANGE)
+    add_arrow(ax, (3.22, 3.44), (3.55, 3.44), RED, dashed=True)
+    add_arrow(ax, (6.78, 3.44), (6.45, 3.44), RED, dashed=True)
 
     ax.text(
         5.0,
-        5.35,
-        wrap("This is the control condition: simultaneous agents get the same task but cannot see each other's hypotheses, results, or best code during the run.", 90),
+        0.12,
+        "The baseline tests whether simple concurrency is enough; the collector cannot guide search while the agents are running.",
         ha="center",
-        va="center",
-        fontsize=11,
-        color="#374151",
-    )
-    ax.text(
-        5.0,
-        0.35,
-        "The collector compares final outputs after both processes exit; it does not coordinate the search.",
-        ha="center",
-        fontsize=10.5,
-        color="#374151",
+        fontsize=9.7,
+        color=MUTED,
     )
 
     save(fig, "figure-05-independent-parallel-architecture")
@@ -431,9 +424,7 @@ def figure_independent_parallel_architecture() -> None:
 
 def main() -> None:
     style()
-    figure_experiment_scorecards()
-    figure_performance_comparison()
-    figure_budget_comparability()
+    figure_validation_bpb_over_time()
     figure_swarm_memory_architecture()
     figure_independent_parallel_architecture()
 
