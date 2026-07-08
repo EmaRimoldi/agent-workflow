@@ -22,7 +22,7 @@ This gives the repo a concrete experimental question:
 ## Fastest Reading Path
 
 1. Read the selected benchmark baseline:
-   [`studies/baseline/README.md`](../studies/baseline/README.md).
+   [`experiments/01_baseline/README.md`](../experiments/01_baseline/README.md).
 
    The current baseline was chosen after 161 controlled non-agentic evaluations.
    The selected starting model is "width 30, lower learning rate" (internal ID
@@ -30,7 +30,7 @@ This gives the repo a concrete experimental question:
    `target_val_bpb = 0.824`.
 
 2. Read the strongest agent-workflow finding:
-   [`studies/agent_memory_ablation/README.md`](../studies/agent_memory_ablation/README.md).
+   [`experiments/04_agent_memory_ablation/README.md`](../experiments/04_agent_memory_ablation/README.md).
 
    The most informative comparison is `T06` vs `T07`:
 
@@ -43,16 +43,16 @@ This gives the repo a concrete experimental question:
    like a random walk, while shared memory reduces catastrophic repeats.
 
 3. Read why the task had to be calibrated:
-   [`studies/evaluator_calibration/results/evaluator_calibration_summary.md`](../studies/evaluator_calibration/results/evaluator_calibration_summary.md).
+   [`experiments/02_evaluator_calibration/results/evaluator_calibration_summary.md`](../experiments/02_evaluator_calibration/results/evaluator_calibration_summary.md).
 
-   This study made evaluation deterministic. Five consecutive baseline runs
+   This experiment made evaluation deterministic. Five consecutive baseline runs
    produced identical `val_bpb = 0.811222`, which means differences can be
    attributed to agent edits rather than training noise.
 
 4. Read why compute allocation had to be controlled:
-   [`studies/compute_allocation_calibration/README.md`](../studies/compute_allocation_calibration/README.md).
+   [`experiments/03_compute_allocation_calibration/README.md`](../experiments/03_compute_allocation_calibration/README.md).
 
-   This study shows why fixed-time parallel training can look worse simply
+   This experiment shows why fixed-time parallel training can look worse simply
    because each worker completes fewer optimizer updates, and why fixed-step
    evaluation separates quality from latency.
 
@@ -60,15 +60,15 @@ This gives the repo a concrete experimental question:
 
 The most useful result figures are:
 
-- [`studies/figures/figure-01-study-map.png`](../studies/figures/figure-01-study-map.png)
-- [`studies/baseline/results/figures/figure-04-recommended-baseline-detail.png`](../studies/baseline/results/figures/figure-04-recommended-baseline-detail.png)
-- [`studies/agent_memory_ablation/results/figures/figure-01-trial-outcomes.png`](../studies/agent_memory_ablation/results/figures/figure-01-trial-outcomes.png)
-- [`studies/agent_memory_ablation/results/figures/figure-02-memory-stabilization.png`](../studies/agent_memory_ablation/results/figures/figure-02-memory-stabilization.png)
-- [`studies/evaluator_calibration/results/calibration__2x2-diversity-memory__superseded/figures/figure-01-main-comparison.png`](../studies/evaluator_calibration/results/calibration__2x2-diversity-memory__superseded/figures/figure-01-main-comparison.png)
-- [`studies/compute_allocation_calibration/results/figures/figure-01-fixed-time-compute-loss.png`](../studies/compute_allocation_calibration/results/figures/figure-01-fixed-time-compute-loss.png)
-- [`studies/compute_allocation_calibration/results/figures/figure-02-fixed-step-latency-cost.png`](../studies/compute_allocation_calibration/results/figures/figure-02-fixed-step-latency-cost.png)
-- [`studies/swarm_baselines/results/figures/figure-01-validation-bpb-over-time.png`](../studies/swarm_baselines/results/figures/figure-01-validation-bpb-over-time.png)
-- [`studies/swarm_baselines/results/figures/figure-04-swarm-memory-architecture.png`](../studies/swarm_baselines/results/figures/figure-04-swarm-memory-architecture.png)
+- [`docs/assets/experiments/experiment-map.png`](../docs/assets/experiments/experiment-map.png)
+- [`experiments/01_baseline/results/figures/figure-04-recommended-baseline-detail.png`](../experiments/01_baseline/results/figures/figure-04-recommended-baseline-detail.png)
+- [`experiments/04_agent_memory_ablation/results/figures/figure-01-trial-outcomes.png`](../experiments/04_agent_memory_ablation/results/figures/figure-01-trial-outcomes.png)
+- [`experiments/04_agent_memory_ablation/results/figures/figure-02-memory-stabilization.png`](../experiments/04_agent_memory_ablation/results/figures/figure-02-memory-stabilization.png)
+- [`experiments/02_evaluator_calibration/results/calibration__2x2-diversity-memory__superseded/figures/figure-01-main-comparison.png`](../experiments/02_evaluator_calibration/results/calibration__2x2-diversity-memory__superseded/figures/figure-01-main-comparison.png)
+- [`experiments/03_compute_allocation_calibration/results/figures/figure-01-fixed-time-compute-loss.png`](../experiments/03_compute_allocation_calibration/results/figures/figure-01-fixed-time-compute-loss.png)
+- [`experiments/03_compute_allocation_calibration/results/figures/figure-02-fixed-step-latency-cost.png`](../experiments/03_compute_allocation_calibration/results/figures/figure-02-fixed-step-latency-cost.png)
+- [`experiments/05_swarm_baselines/results/figures/figure-01-validation-bpb-over-time.png`](../experiments/05_swarm_baselines/results/figures/figure-01-validation-bpb-over-time.png)
+- [`experiments/05_swarm_baselines/results/figures/figure-04-swarm-memory-architecture.png`](../experiments/05_swarm_baselines/results/figures/figure-04-swarm-memory-architecture.png)
 
 ## Runnable Surface
 
@@ -87,5 +87,5 @@ uv run agentops baseline-calibration --help
 ```
 
 The repository does not include raw private run logs or local datasets. Curated
-summaries and figures are checked in under `studies/`; new full runs write to
+summaries and figures are checked in under `experiments/`; new full runs write to
 `runs/`.

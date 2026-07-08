@@ -1,4 +1,4 @@
-"""Manages parallel process spawning for agent studies.
+"""Manages parallel process spawning for agent experiments.
 
 Responsibilities:
 - Initialize experiment directory
@@ -34,7 +34,7 @@ from agentops_lab.utils.workspace import create_workspace, destroy_workspace
 
 
 class Orchestrator:
-    """Coordinates multi-agent studies.
+    """Coordinates multi-agent experiments.
 
     Modes supported:
       run_parallel()   — N independent agents in parallel (N from config.agents)

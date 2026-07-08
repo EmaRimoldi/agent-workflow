@@ -20,7 +20,7 @@ def create_swarm_blackboard(
     mode_dir: str | Path,
     config: SwarmModeConfig | None = None,
 ) -> SharedMemory:
-    """Create the shared blackboard used by swarm studies."""
+    """Create the shared blackboard used by swarm experiments."""
     cfg = config or SwarmModeConfig()
     path = Path(mode_dir) / cfg.shared_memory_file
     return SharedMemory(path=path, max_context_entries=cfg.max_context_entries)

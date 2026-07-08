@@ -1,4 +1,4 @@
-"""Generate public figures for the agent memory ablation study."""
+"""Generate public figures for the agent memory ablation experiment."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from matplotlib.ticker import MaxNLocator
 
 
 ROOT = Path(__file__).resolve().parents[1]
-STUDY = ROOT / "studies" / "agent_memory_ablation"
+STUDY = ROOT / "experiments" / "04_agent_memory_ablation"
 RESULTS = STUDY / "results" / "trial_results.json"
 FIGURES = STUDY / "results" / "figures"
 

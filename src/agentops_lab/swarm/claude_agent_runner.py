@@ -412,7 +412,7 @@ class ClaudeAgentRunner(AgentRunner):
         return (
             f"Continue the research. ~{mins_left} min remaining in budget. "
             f"{time_guidance} "
-            f"Keep modifying train.py and running studies to improve val_bpb."
+            f"Keep modifying train.py and running experiments to improve val_bpb."
         )
 
     # ------------------------------------------------------------------

@@ -20,9 +20,9 @@ The repo does three things:
 1. Runs the workflows through one CLI: `agentops`.
 2. Captures audit evidence: logs, snapshots, traces, shared-memory events, and
    certified hitting time.
-3. Preserves the studies showing what was learned.
+3. Preserves the experiments showing what was learned.
 
-The strongest current result is the memory ablation study. Exploratory search
+The strongest current result is the memory ablation experiment. Exploratory search
 without memory, `T06`, was unstable: best `val_bpb = 0.933`, mean
 `1.816`. The shared-memory version, `T07`, was better and much more stable:
 best `0.914`, mean `1.049`, with Mann-Whitney `p < 0.001`.
@@ -67,21 +67,21 @@ are still present for provenance, but the canonical route is `agentops`.
 
 Files:
 
-- `studies/README.md`
-- `studies/baseline/README.md`
-- `studies/agent_memory_ablation/README.md`
-- `studies/evaluator_calibration/results/evaluator_calibration_summary.md`
+- `experiments/README.md`
+- `experiments/01_baseline/README.md`
+- `experiments/04_agent_memory_ablation/README.md`
+- `experiments/02_evaluator_calibration/results/evaluator_calibration_summary.md`
 
 What to say:
 
-The repo is structured as a sequence of studies. Each study has a question,
+The repo is structured as a sequence of experiments. Each experiment has a question,
 what was run, the result, the caveat, and the first file to read.
 
 ### 4. Show the strongest empirical result
 
 File:
 
-- `studies/agent_memory_ablation/README.md`
+- `experiments/04_agent_memory_ablation/README.md`
 
 Key numbers:
 
@@ -100,14 +100,14 @@ catastrophic repeats in this setting.
 
 Files:
 
-- `studies/theory_validation/results/README.md`
 - `docs/reviewer_checklist.md`
+- `experiments/catalog.md`
 
 What to say:
 
-The repo is explicit about limits. The BP theory is cleaner than the original
-draft, but it is not fully validated. The studies show a path toward rigorous
-agent-workflow evaluation, not a finished universal benchmark.
+The repo is explicit about limits. The experiments show a path toward rigorous
+agent-workflow evaluation on one controlled substrate, not a finished universal
+benchmark.
 
 ## Local Smoke Demo
 

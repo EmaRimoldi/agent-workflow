@@ -19,8 +19,8 @@ If you are reviewing this repository quickly:
    result path.
 3. Read [`docs/reviewer_checklist.md`](docs/reviewer_checklist.md) to verify
    what is built, what is evidence, and what is still open.
-4. Use [`studies/README.md`](studies/README.md) for the study-by-study map.
-5. Use [`studies/experiment_catalog.md`](studies/experiment_catalog.md) for the
+4. Use [`experiments/README.md`](experiments/README.md) for the experiment map.
+5. Use [`experiments/catalog.md`](experiments/catalog.md) for the
    compact inventory of preserved experiment bundles.
 6. Use [`docs/reproducibility.md`](docs/reproducibility.md) for local and
    Claude Code setup.
@@ -44,18 +44,18 @@ with long-running or expensive work.
 
 ## Concrete Evidence In This Repo
 
-The checked-in `studies/` directory is the demo surface. It contains curated
+The checked-in `experiments/` directory is the demo surface. It contains curated
 summaries, figures, and result tables from agent-workflow experiments.
 
 Key examples:
 
 | Evidence | What it shows | Start here |
 |---|---|---|
-| Starting model calibration | 161 controlled evaluations selected the common starting `train.py`: validation loss before edits `val_bpb = 0.841354`, success threshold `val_bpb <= 0.824` | [`studies/baseline/README.md`](studies/baseline/README.md) |
-| Shared memory effect | `T07` shared-memory exploration found better and more stable results than `T06` exploratory search without memory: best `0.914` vs `0.933`, mean `1.049` vs `1.816` | [`studies/agent_memory_ablation/README.md`](studies/agent_memory_ablation/README.md) |
-| Historical swarm baseline | Blackboard-style swarm runs reached lower validation BPB than an independent-parallel baseline: `1.041477` vs `1.113130` | [`studies/swarm_baselines/README.md`](studies/swarm_baselines/README.md) |
-| Deterministic evaluator | Five baseline runs produced identical `val_bpb = 0.811222`, removing training noise as the main explanation | [`studies/evaluator_calibration/results/evaluator_calibration_summary.md`](studies/evaluator_calibration/results/evaluator_calibration_summary.md) |
-| Compute allocation calibration | Fixed-time parallel training completed fewer optimizer updates and looked worse; fixed-step evaluation preserved quality but changed latency | [`studies/compute_allocation_calibration/README.md`](studies/compute_allocation_calibration/README.md) |
+| Starting model calibration | 161 controlled evaluations selected the common starting `train.py`: validation loss before edits `val_bpb = 0.841354`, success threshold `val_bpb <= 0.824` | [`experiments/01_baseline/README.md`](experiments/01_baseline/README.md) |
+| Shared memory effect | `T07` shared-memory exploration found better and more stable results than `T06` exploratory search without memory: best `0.914` vs `0.933`, mean `1.049` vs `1.816` | [`experiments/04_agent_memory_ablation/README.md`](experiments/04_agent_memory_ablation/README.md) |
+| Historical swarm baseline | Blackboard-style swarm runs reached lower validation BPB than an independent-parallel baseline: `1.041477` vs `1.113130` | [`experiments/05_swarm_baselines/README.md`](experiments/05_swarm_baselines/README.md) |
+| Deterministic evaluator | Five baseline runs produced identical `val_bpb = 0.811222`, removing training noise as the main explanation | [`experiments/02_evaluator_calibration/results/evaluator_calibration_summary.md`](experiments/02_evaluator_calibration/results/evaluator_calibration_summary.md) |
+| Compute allocation calibration | Fixed-time parallel training completed fewer optimizer updates and looked worse; fixed-step evaluation preserved quality but changed latency | [`experiments/03_compute_allocation_calibration/README.md`](experiments/03_compute_allocation_calibration/README.md) |
 
 ## What Works Today
 
@@ -66,7 +66,7 @@ Key examples:
 - Blackboard/shared-memory primitives with tests.
 - Certified-time, diversity, snapshotting, reasoning-trace, and calibration
   utilities.
-- Curated study evidence with figures and result tables.
+- Curated experiment evidence with figures and result tables.
 
 ## What This Does Not Claim Yet
 
@@ -118,14 +118,13 @@ docs/
   reviewer_checklist.md         what a reviewer can verify quickly
   reproducibility.md            local setup and Claude Code reproduction notes
 
-studies/
-  baseline/                     starting model calibration evidence
-  evaluator_calibration/        deterministic evaluator evidence
-  compute_allocation_calibration/
+experiments/
+  01_baseline/                     starting model calibration evidence
+  02_evaluator_calibration/        deterministic evaluator evidence
+  03_compute_allocation_calibration/
                                   CPU compute-allocation and fixed-step evidence
-  agent_memory_ablation/        memory and exploration ablation evidence
-  swarm_baselines/              blackboard coordination evidence
-  theory_validation/            theorem/protocol validation evidence
+  04_agent_memory_ablation/        memory and exploration ablation evidence
+  05_swarm_baselines/              blackboard coordination evidence
 
 autoresearch/
   CIFAR-10 train.py optimization task used by the agents
@@ -221,6 +220,6 @@ Start here:
 ## Repository Scope
 
 Agent Workflow Evaluation Lab keeps the runnable runtime, evaluation protocols,
-curated study summaries, and AutoResearch substrate in one repository. Raw run
+curated experiment summaries, and AutoResearch substrate in one repository. Raw run
 logs, local data, transient agent workspaces, and private process notes are
 intentionally out of scope.

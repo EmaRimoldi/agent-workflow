@@ -1,4 +1,4 @@
-"""Generate simple figures for the starting-model calibration study.
+"""Generate simple figures for the starting-model calibration experiment.
 
 Public-facing figures avoid internal shorthand such as q*, q3, BP, and
 candidate IDs. Raw IDs remain in the CSV/JSON artifacts for provenance.
@@ -14,7 +14,7 @@ import pandas as pd
 
 
 ROOT = Path(__file__).resolve().parents[1]
-STUDY = ROOT / "studies" / "baseline"
+STUDY = ROOT / "experiments" / "01_baseline"
 TABLES = STUDY / "results" / "tables"
 FIGURES = STUDY / "results" / "figures"
 

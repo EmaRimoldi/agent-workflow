@@ -47,7 +47,7 @@ claude auth status
 ## Benchmark Baseline
 
 The current calibrated baseline comes from
-[`../../studies/baseline/README.md`](../../studies/baseline/README.md):
+[`../../experiments/01_baseline/README.md`](../../experiments/01_baseline/README.md):
 
 ```text
 starting_model = width 30, lower learning rate
@@ -58,7 +58,7 @@ fixed-length evaluator = AUTOSEARCH_MAX_STEPS=1170
 ```
 
 Use this baseline for new reviewer-grade comparisons unless a newer calibration
-study supersedes it.
+experiment supersedes it.
 
 ## Matched Run Pattern
 
@@ -167,7 +167,7 @@ After runs finish:
    ```
 
 3. Compare modes only when evaluator settings, model, and target threshold match.
-4. Move final summaries, tables, and figures into a named `studies/<study>/`
+4. Move final summaries, tables, and figures into a named `experiments/<experiment>/`
    folder. Do not commit raw transient workspaces unless they are needed for
    provenance.
 
@@ -178,5 +178,5 @@ After runs finish:
 - `--serialized-evaluator` is recommended on shared machines to avoid
   contention masquerading as a workflow effect.
 - A single replicate is a probe, not a confirmatory result.
-- Swarm historical baselines in `studies/swarm_baselines/` are context only;
+- Swarm historical baselines in `experiments/05_swarm_baselines/` are context only;
   they are not normalized rows for the current BP 2x2 decomposition.

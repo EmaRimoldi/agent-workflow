@@ -2,7 +2,7 @@
 
 Generated after the starting-model calibration batches run on April 14, 2026.
 
-## Studies Run
+## Experiments Run
 
 | run | training updates | trials | purpose |
 | --- | ---: | ---: | --- |

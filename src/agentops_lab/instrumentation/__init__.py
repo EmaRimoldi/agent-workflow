@@ -1,4 +1,4 @@
-"""Instrumentation utilities for agent studies."""
+"""Instrumentation utilities for agent experiments."""
 
 from agentops_lab.instrumentation.reasoning_trace import ReasoningEntry, ReasoningTracer
 from agentops_lab.instrumentation.snapshotting import SnapshotManager, SnapshotMetadata

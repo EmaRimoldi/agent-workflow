@@ -18,7 +18,7 @@ Repository structure assumed (verified from runs/):
 
 Usage:
     python scripts/analyze_runs.py                           # latest experiment
-    python scripts/analyze_runs.py --runs-dir runs/          # all studies
+    python scripts/analyze_runs.py --runs-dir runs/          # all experiments
     python scripts/analyze_runs.py --experiment exp_20260401_013535
     python scripts/analyze_runs.py --output-dir my_analysis/
 """
@@ -48,11 +48,11 @@ from datetime import datetime, timezone
 
 def discover_experiments(runs_dir: Path) -> list[Path]:
     """Return sorted list of valid experiment directories under runs_dir."""
-    studies = sorted(
+    experiments = sorted(
         p for p in runs_dir.iterdir()
         if p.is_dir() and (p / "config.json").exists()
     )
-    return studies
+    return experiments
 
 
 def discover_agents(experiment_dir: Path) -> list[Path]:
@@ -1289,7 +1289,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--all", action="store_true",
-        help="Analyse all studies found in --runs-dir.",
+        help="Analyse all experiments found in --runs-dir.",
     )
     parser.add_argument(
         "--output-dir", type=Path, default=None,
@@ -1302,23 +1302,23 @@ def main() -> None:
         print(f"Error: runs directory not found: {runs_dir}", file=sys.stderr)
         sys.exit(1)
 
-    studies = discover_experiments(runs_dir)
-    if not studies:
-        print(f"No studies found in {runs_dir}", file=sys.stderr)
+    experiments = discover_experiments(runs_dir)
+    if not experiments:
+        print(f"No experiments found in {runs_dir}", file=sys.stderr)
         sys.exit(1)
 
     if args.all:
-        target_experiments = studies
+        target_experiments = experiments
     elif args.experiment:
         # Find by partial or full name
-        matches = [e for e in studies if args.experiment in e.name]
+        matches = [e for e in experiments if args.experiment in e.name]
         if not matches:
             print(f"No experiment matching '{args.experiment}' found.", file=sys.stderr)
             sys.exit(1)
         target_experiments = matches
     else:
         # Default: latest experiment
-        target_experiments = [studies[-1]]
+        target_experiments = [experiments[-1]]
 
     for exp_dir in target_experiments:
         out_dir = args.output_dir if args.output_dir else (

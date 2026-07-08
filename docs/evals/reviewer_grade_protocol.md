@@ -1,7 +1,7 @@
 # Reviewer-Grade BP Protocol
 
 This protocol is the confirmatory version of the AutoResearch BP experiment. It
-addresses the main construct-validity weaknesses from the exploratory studies.
+addresses the main construct-validity weaknesses from the exploratory experiments.
 
 ## Estimand
 

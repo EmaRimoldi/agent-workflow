@@ -346,7 +346,7 @@ class Coordinator:
         self._exp_count += 1
 
     def should_sync(self) -> bool:
-        """True every 5 studies — prompt to pull global best."""
+        """True every 5 experiments — prompt to pull global best."""
         return self._exp_count > 0 and self._exp_count % 5 == 0
 
     # ------------------------------------------------------------------

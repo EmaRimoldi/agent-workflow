@@ -210,7 +210,7 @@ class SharedMemory:
         """True if an active claim is semantically similar to hypothesis.
 
         Uses word-level Jaccard similarity (no external dependencies).
-        Also checks completed results so agents don't re-run failed studies.
+        Also checks completed results so agents don't re-run failed experiments.
         """
         tokens_new = _tokenise(hypothesis)
         if not tokens_new:
@@ -222,7 +222,7 @@ class SharedMemory:
             if _jaccard(tokens_new, tokens_existing) >= threshold:
                 return True
 
-        # Check completed results (don't repeat finished studies)
+        # Check completed results (don't repeat finished experiments)
         for e in self._read_all_raw():
             if e.get("entry_type") != ENTRY_RESULT:
                 continue

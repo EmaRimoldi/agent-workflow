@@ -2,11 +2,11 @@
 
 This repo can be used at three levels:
 
-1. Inspect checked-in study summaries, tables, and figures without running agents.
+1. Inspect checked-in experiment summaries, tables, and figures without running agents.
 2. Run local smoke tests for the runtime and analysis code.
 3. Re-run agent experiments with Claude Code and the AutoResearch substrate.
 
-Historical study summaries are preserved evidence bundles. New agent runs will
+Historical experiment summaries are preserved evidence bundles. New agent runs will
 not be bit-for-bit identical because Claude Code, model routing, service
 versions, and stochastic agent decisions can change over time. For serious
 reruns, pin the model, use fixed-step evaluation, and keep the generated run
@@ -158,7 +158,7 @@ Use these settings when the output will support a claim:
 - `--serialized-evaluator` when multiple agents share a machine.
 - A pinned Claude model in `configs/experiment.yaml`.
 - A pre-registered `--target-val-bpb` when computing certified hitting time.
-- A clean `--experiment-id` that names the study and date.
+- A clean `--experiment-id` that names the experiment and date.
 
 Example:
 

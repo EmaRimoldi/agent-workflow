@@ -8,7 +8,7 @@ import argparse
 def main(argv=None) -> None:
     parser = argparse.ArgumentParser(
         prog="agentops",
-        description="Run Agent Workflow Evaluation Lab studies and analysis workflows.",
+        description="Run Agent Workflow Evaluation Lab experiments and analysis workflows.",
     )
     commands = [
         "parallel",
