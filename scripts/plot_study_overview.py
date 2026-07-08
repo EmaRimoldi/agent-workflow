@@ -48,7 +48,7 @@ STUDIES = [
         "name": "Agent memory ablation",
         "folder": "agent_memory_ablation/",
         "role": "Test memory and exploration",
-        "result": "P12 controlled high-exploration failures better than P11",
+        "result": "T07 controlled exploratory failures better than T06",
         "color": PURPLE,
     },
     {

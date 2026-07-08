@@ -22,9 +22,9 @@ The repo does three things:
    certified hitting time.
 3. Preserves the studies showing what was learned.
 
-The strongest current result is the probe ablation study. Exploratory search
-without memory, `P11`, was unstable: best `val_bpb = 0.934`, mean
-`1.816`. The shared-memory version, `P12`, was better and much more stable:
+The strongest current result is the memory ablation study. Exploratory search
+without memory, `T06`, was unstable: best `val_bpb = 0.933`, mean
+`1.816`. The shared-memory version, `T07`, was better and much more stable:
 best `0.914`, mean `1.049`, with Mann-Whitney `p < 0.001`.
 
 The takeaway is narrow but useful: more agent exploration is not automatically
@@ -85,10 +85,10 @@ File:
 
 Key numbers:
 
-| Probe | Meaning | Runs | Best `val_bpb` | Mean `val_bpb` |
+| Trial | Meaning | Attempts | Best `val_bpb` | Mean `val_bpb` |
 |---|---|---:|---:|---:|
-| `P11` | exploratory search, no memory | 21 | 0.934 | 1.816 |
-| `P12` | exploratory search with shared memory | 41 | 0.914 | 1.049 |
+| `T06` | exploratory search, no memory | 21 | 0.933 | 1.816 |
+| `T07` | exploratory search with shared memory | 41 | 0.914 | 1.049 |
 
 What to say:
 

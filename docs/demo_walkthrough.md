@@ -32,12 +32,12 @@ This gives the repo a concrete experimental question:
 2. Read the strongest agent-workflow finding:
    [`studies/agent_memory_ablation/README.md`](../studies/agent_memory_ablation/README.md).
 
-   The most informative comparison is P11 vs P12:
+   The most informative comparison is `T06` vs `T07`:
 
-   | Probe | Meaning | Runs | Best `val_bpb` | Mean `val_bpb` |
+   | Trial | Meaning | Attempts | Best `val_bpb` | Mean `val_bpb` |
    |---|---|---:|---:|---:|
-   | P11 | exploratory search, no memory | 21 | 0.934 | 1.816 |
-   | P12 | exploratory search with shared memory | 41 | 0.914 | 1.049 |
+   | `T06` | exploratory search, no memory | 21 | 0.933 | 1.816 |
+   | `T07` | exploratory search with shared memory | 41 | 0.914 | 1.049 |
 
    The interpretation is that exploration without routing correction behaves
    like a random walk, while shared memory reduces catastrophic repeats.
@@ -62,7 +62,7 @@ The most useful result figures are:
 
 - [`studies/figures/figure-01-study-map.png`](../studies/figures/figure-01-study-map.png)
 - [`studies/baseline/results/figures/figure-04-recommended-baseline-detail.png`](../studies/baseline/results/figures/figure-04-recommended-baseline-detail.png)
-- [`studies/agent_memory_ablation/results/figures/figure-01-probe-outcomes.png`](../studies/agent_memory_ablation/results/figures/figure-01-probe-outcomes.png)
+- [`studies/agent_memory_ablation/results/figures/figure-01-trial-outcomes.png`](../studies/agent_memory_ablation/results/figures/figure-01-trial-outcomes.png)
 - [`studies/agent_memory_ablation/results/figures/figure-02-memory-stabilization.png`](../studies/agent_memory_ablation/results/figures/figure-02-memory-stabilization.png)
 - [`studies/evaluator_calibration/results/calibration__2x2-diversity-memory__superseded/figures/figure-01-main-comparison.png`](../studies/evaluator_calibration/results/calibration__2x2-diversity-memory__superseded/figures/figure-01-main-comparison.png)
 - [`studies/compute_allocation_calibration/results/figures/figure-01-fixed-time-compute-loss.png`](../studies/compute_allocation_calibration/results/figures/figure-01-fixed-time-compute-loss.png)

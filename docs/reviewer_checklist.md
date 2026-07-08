@@ -30,7 +30,7 @@ to know whether Agent Workflow Evaluation Lab is real, inspectable, and honest a
 |---|---|---|
 | The benchmark starting model was calibrated before agent claims. | `studies/baseline/README.md` | 161 controlled evaluations; 1170-update runs are the decision evidence. |
 | Training noise can be removed from the evaluator. | `studies/evaluator_calibration/results/evaluator_calibration_summary.md` | Five identical baseline runs at `val_bpb = 0.811222`. |
-| Shared memory can reduce destructive exploration in this substrate. | `studies/agent_memory_ablation/README.md` | P12 beats P11 on best and mean `val_bpb`, with `p < 0.001`. |
+| Shared memory can reduce destructive exploration in this substrate. | `studies/agent_memory_ablation/README.md` | `T07` beats `T06` on best and mean `val_bpb`, with `p < 0.001`. |
 | Compute allocation can confound fixed-time parallel evaluation. | `studies/compute_allocation_calibration/README.md` | Fixed-time trend plus fixed-step control. |
 | The theory layer is not overclaimed. | `studies/theory_validation/results/README.md` | Explicitly states cleaner theory but insufficient empirical validation. |
 
@@ -47,7 +47,7 @@ to know whether Agent Workflow Evaluation Lab is real, inspectable, and honest a
 ## Honest Limits
 
 - This is not a general-purpose agent benchmark yet.
-- The current empirical result is strongest for one substrate and one probe
+- The current empirical result is strongest for one substrate and one trial
   comparison, not every agent workflow.
 - Historical live-agent runs are not bit-for-bit reproducible because external
   model services and agent choices can change.
@@ -56,7 +56,7 @@ to know whether Agent Workflow Evaluation Lab is real, inspectable, and honest a
 
 ## Next Stronger Proof Points
 
-1. Replicate the P11/P12 result across multiple seeds and model families.
+1. Replicate the `T06`/`T07` result across multiple seeds and model families.
 2. Run the calibrated `width30_lr_low` benchmark with fixed-step, logged settings.
 3. Add a lightweight hosted or recorded demo generated from a fresh run.
 4. Add CI for tests and public-surface smoke checks.

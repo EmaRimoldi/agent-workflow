@@ -7,7 +7,7 @@ search more reliable?
 
 ## Task
 
-Each probe runs Claude Haiku agents on the AutoResearch CIFAR-10 task. Agents
+Each trial runs Claude Haiku agents on the AutoResearch CIFAR-10 task. Agents
 edit one training script, launch short training attempts, and try to lower
 validation BPB.
 
@@ -20,9 +20,28 @@ the starting script is already strong, so most edits make it worse. A useful
 agent workflow should avoid repeated harmful edits, not merely generate many
 attempts.
 
+## Trial Set
+
+The public study uses 11 valid trials, renumbered `T01` through `T11`. Corrupted
+or non-executed historical cells were removed before renumbering.
+
+| Trial | Condition | Memory | Attempts | Best `val_bpb` | Mean `val_bpb` |
+| --- | --- | --- | ---: | ---: | ---: |
+| `T01` | parallel, mixed search styles | none | 14 | 0.980 | 1.136 |
+| `T02` | single-agent control | none | 8 | 0.936 | 1.070 |
+| `T03` | single agent, 30-second train | none | 10 | 1.103 | 1.447 |
+| `T04` | parallel, mixed search styles | none | 29 | 0.971 | 1.190 |
+| `T05` | parallel, same search style | none | 14 | 0.960 | 1.090 |
+| `T06` | exploratory, no memory | none | 21 | 0.933 | 1.816 |
+| `T07` | exploratory + shared memory | shared | 41 | 0.914 | 1.049 |
+| `T08` | two exploratory agents | none | 44 | 0.961 | 1.852 |
+| `T09` | seeded learning-rate hint | none | 13 | 0.880 | 1.501 |
+| `T10` | start from seeded baseline | none | 21 | 0.962 | 1.216 |
+| `T11` | shared + private memory | shared and private | 32 | 0.955 | 1.064 |
+
 ## Workflow Conditions
 
-The probe matrix varies four workflow choices:
+The trials vary four workflow choices:
 
 - one agent vs two parallel agents;
 - no memory, private memory, shared memory, or both;
@@ -44,88 +63,54 @@ does not expose a real sampling-temperature flag. In this repo, values such as
 directives**: low values ask for conservative edits, high values ask for broader
 exploration, and `null` leaves Claude at default behavior.
 
-## Validity Filter
-
-The planned matrix had 18 probes, `P01` through `P18`.
-
-The canonical analysis uses 11 valid primary probes:
-
-`P02`, `P03`, `P04`, `P09`, `P10`, `P11`, `P12`, `P13`, `P15`, `P16`, `P17`.
-
-These probes contribute 247 training records to the public figures.
-
-Excluded from canonical analysis:
-
-- `P05`-`P08`: memory was configured but silently broken, so these are not valid
-  memory tests.
-- `P01`: useful historical context, but it used an older training template that
-  ran about 315 seconds per attempt instead of the later 60-second evaluator.
-- `P14` and `P18`: planned cells that did not run.
-
-The `P05`-`P08` records are preserved in archived analysis files because they
-are operational evidence of a real pipeline failure. They should not be used to
-claim that private or shared memory helped.
-
-The valid shared-memory probes are primarily `P12` and `P17`.
-
 ## Main Result
 
-The clearest comparison is `P11` vs `P12`:
+The clearest comparison is `T06` vs `T07`:
 
-| Probe | Condition | Runs | Best `val_bpb` | Mean `val_bpb` | Worst `val_bpb` |
+| Trial | Condition | Attempts | Best `val_bpb` | Mean `val_bpb` | Worst `val_bpb` |
 | --- | --- | ---: | ---: | ---: | ---: |
-| `P11` | exploratory search, no memory | 21 | 0.933 | 1.816 | 2.305 |
-| `P12` | exploratory search, shared memory | 41 | 0.914 | 1.049 | 1.462 |
+| `T06` | exploratory search, no memory | 21 | 0.933 | 1.816 | 2.305 |
+| `T07` | exploratory search, shared memory | 41 | 0.914 | 1.049 | 1.462 |
 
 The interpretation is narrow but important: shared memory did not solve the
 task, but it kept exploratory agents from repeatedly damaging the solution. In
 this substrate, shared memory acts mostly as variance reduction and failure
 avoidance.
 
-`P17` tested shared plus private memory and did not improve over `P12`. That
+`T11` tested shared plus private memory and did not improve over `T07`. That
 suggests private memory is not automatically useful here; it may constrain
 exploration or duplicate information already present in the shared log.
 
 ## Figures
 
-![Valid probe outcomes](results/figures/figure-01-probe-outcomes.png)
+![Valid trial outcomes](results/figures/figure-01-trial-outcomes.png)
 
-**Figure 1**: best validation BPB reached by valid primary probes only. `P05`-
-`P08` are intentionally absent because their memory mechanism was broken.
+**Figure 1**: best validation BPB reached by each valid trial. Stars beat the
+baseline.
 
 ![Memory stabilization](results/figures/figure-02-memory-stabilization.png)
 
-**Figure 2**: the core result. With exploratory search, `P12` stays much closer
+**Figure 2**: the core result. With exploratory search, `T07` stays much closer
 to the baseline than no-memory controls and avoids the worst regressions.
 
-![Validity filter](results/figures/figure-03-validity-filter.png)
+![Training attempts](results/figures/figure-03-training-attempts.png)
 
-**Figure 3**: the data filter used for public analysis. Corrupted memory trials
-are retained as archival evidence, not plotted as valid outcomes.
+**Figure 3**: how many training attempts each valid trial produced.
 
 ## Important Caveats
 
-This is a probing study, not a confirmatory benchmark. Each probe has one
+This is a probing study, not a confirmatory benchmark. Each trial has one
 execution, so results are best read as signal detection.
 
-The raw `runs/experiment_probe_P*/` directories and original probe YAML configs
-are not included in this public tree. The preserved evidence is the derived JSON
-tables, summary reports, and figures under `results/`.
-
-The archived reports still mention the historical 293 executed records. The
-public narrative and figures use the stricter 247-record valid-analysis set.
+The raw live-agent run directories and original historical configs are not
+included in this public tree. The preserved evidence is the canonical trial
+table, statistical summary, and generated figures under `results/`.
 
 ## Evidence Files
 
-- `results/probe_ablation_summary.md`: detailed historical narrative with a
-  validity note at the top.
-- `results/validity_filter.md`: canonical list of valid, excluded, context-only,
-  and not-run probes.
-- `results/probe_ablation/analysis/probe_wave1_2_3_4_results.json`: structured
-  probe-level metrics, including archived excluded probes.
-- `results/probe_ablation/analysis/analysis-report.md`: archived compact
-  analysis report.
-- `results/probe_ablation/analysis/stats-appendix.md`: archived statistical
-  appendix.
-- `results/probe_ablation/figures/design_audit/`: archived design-audit figures.
+- `results/trial_index.md`: compact table of the valid `T01`-`T11` trials.
+- `results/trial_results.json`: machine-readable canonical trial metrics.
+- `results/statistical_summary.md`: clean run-level comparisons used in the
+  public narrative.
+- `results/figures/`: generated PNG/PDF figures.
 - `../../scripts/plot_agent_memory_ablation.py`: public figure generator.
