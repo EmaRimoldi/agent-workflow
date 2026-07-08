@@ -10,6 +10,8 @@ Before posting:
 - Confirm GitHub Actions is green on `main`.
 - Confirm the MIT license is visible in `LICENSE` and `pyproject.toml`.
 - Enable GitHub Pages from `/docs` if you want the landing page live.
+- Run `uv run agent-workflow demo` from a fresh clone and open the generated
+  `report.html`.
 - Run `uv run agent-workflow doctor` from a fresh clone.
 - Prepare one short demo clip or use `docs/assets/product/demo.gif`.
 - Ask a small group of developers to try the quick start before launch.

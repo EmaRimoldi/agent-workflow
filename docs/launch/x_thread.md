@@ -59,7 +59,7 @@ Lower val_bpb is better.
 
 git clone https://github.com/EmaRimoldi/agent-workflow.git
 cd agent-workflow
-uv run agent-workflow doctor
+uv run agent-workflow demo
 ```
 
 ```text

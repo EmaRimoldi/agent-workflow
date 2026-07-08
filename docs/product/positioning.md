@@ -14,6 +14,10 @@ The current evidence supports a narrow but useful claim:
 > that shared memory reduced mean `val_bpb` from 1.816 to 1.049. Shared memory
 > did not solve the task, but it made exploratory agents less destructive.
 
+The repository also includes `uv run agent-workflow demo`, an offline fixture
+that generates a Workflow Card and static HTML report without Claude Code, GPU,
+or provider quota. Treat it as onboarding, not as scientific evidence.
+
 ## Audience
 
 Primary:

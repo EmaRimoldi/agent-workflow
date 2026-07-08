@@ -11,6 +11,7 @@ to know whether Agent Workflow is real, inspectable, and honest about its limits
 | What concrete task does it run? | `autoresearch/README.md`, `autoresearch/train.py` | Agents optimize CIFAR-10 validation loss by editing one training script. |
 | What is the user-facing surface? | `src/agent_workflow/cli.py`, `README.md` | One CLI: `agent-workflow`. |
 | What should a reviewer read first? | `docs/demo_script.md`, `docs/demo_walkthrough.md` | Short demo path and evidence path are explicit. |
+| Can this be tried without Claude Code or GPU? | `uv run agent-workflow demo` | Offline fixture bundle with `report.html` and Workflow Card. |
 
 ## Built System
 
@@ -23,6 +24,7 @@ to know whether Agent Workflow is real, inspectable, and honest about its limits
 | Diversity metrics | `src/agent_workflow/analysis/diversity.py` | Implemented and tested. |
 | Snapshot and reasoning traces | `src/agent_workflow/instrumentation/` | Implemented and tested. |
 | Baseline calibration | `src/agent_workflow/baseline_calibration.py` | Implemented and tested. |
+| Offline demo bundle | `src/agent_workflow/demo.py` | Implemented and tested. |
 | Public license | `LICENSE`, `pyproject.toml` | MIT license published. |
 
 ## Evidence

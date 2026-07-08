@@ -20,6 +20,7 @@ def main(argv=None) -> None:
         "certified-time",
         "baseline-calibration",
         "doctor",
+        "demo",
     ]
     parser.add_argument("command", nargs="?", choices=commands, help="Command to run.")
     parser.add_argument("args", nargs=argparse.REMAINDER)
@@ -53,6 +54,9 @@ def main(argv=None) -> None:
     elif args.command == "doctor":
         from agent_workflow.doctor import main as doctor_main
         doctor_main(rest)
+    elif args.command == "demo":
+        from agent_workflow.demo import main as demo_main
+        demo_main(rest)
     else:
         parser.print_help()
 

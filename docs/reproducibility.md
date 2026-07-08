@@ -3,8 +3,9 @@
 This repo can be used at three levels:
 
 1. Inspect checked-in experiment summaries, tables, and figures without running agents.
-2. Run local smoke tests for the runtime and analysis code.
-3. Re-run agent experiments with Claude Code and the AutoResearch substrate.
+2. Generate an offline demo bundle without Claude Code or GPU.
+3. Run local smoke tests for the runtime and analysis code.
+4. Re-run agent experiments with Claude Code and the AutoResearch substrate.
 
 Historical experiment summaries are preserved evidence bundles. New agent runs will
 not be bit-for-bit identical because Claude Code, model routing, service
@@ -37,10 +38,17 @@ cd ..
 Run local smoke checks:
 
 ```bash
+uv run agent-workflow demo --experiment-id readme_demo
 uv run agent-workflow doctor
 PYTHONPATH=src python -m pytest tests -q
 PYTHONPATH=src python -m agent_workflow.cli --help
 ```
+
+`agent-workflow demo` writes deterministic fixture data under
+`runs/experiment_readme_demo/`, including `report.html`, `workflow_card.md`,
+`workflow_card.json`, `summary.json`, and `trajectories.csv`. It is useful for
+reviewing artifact shape before running live agents, but it is not live Claude
+Code evidence.
 
 ## Claude Code Setup
 

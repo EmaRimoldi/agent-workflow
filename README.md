@@ -25,6 +25,24 @@ subscription, provider quota, rate limits, and available compute.
 ```bash
 git clone https://github.com/EmaRimoldi/agent-workflow.git
 cd agent-workflow
+uv run agent-workflow demo
+```
+
+The demo writes an offline evidence bundle with no Claude Code session, GPU, or
+provider quota required:
+
+```text
+runs/experiment_demo_.../
+  workflow_card.md
+  workflow_card.json
+  report.html
+  trajectories.csv
+  summary.json
+```
+
+Before live runs:
+
+```bash
 uv run agent-workflow doctor
 ```
 
@@ -130,6 +148,7 @@ uv run agent-workflow merge --help
 uv run agent-workflow certified-time --help
 uv run agent-workflow baseline-calibration --help
 uv run agent-workflow doctor
+uv run agent-workflow demo
 ```
 
 Live agent runs require Claude Code authentication and a clean workspace. See
@@ -138,6 +157,9 @@ Live agent runs require Claude Code authentication and a clean workspace. See
 ## What Is Included
 
 - A runnable `agent-workflow` CLI.
+- An offline `agent-workflow demo` command that generates a reviewable evidence
+  bundle without Claude Code, GPU, or provider quota.
+- Static `report.html` and `workflow_card` artifacts for fast run review.
 - Configurable agent rosters for custom roles, models, temperatures, and device
   assignment.
 - Claude Code project instructions, sub-agent templates, and a preflight
@@ -159,6 +181,7 @@ Live agent runs require Claude Code authentication and a clean workspace. See
 ## More
 
 - [`docs/index.html`](docs/index.html) - minimal GitHub Pages landing page
+- [`docs/demo.md`](docs/demo.md) - offline demo command and generated artifacts
 - [`docs/launch/`](docs/launch/) - launch checklist and copy
 - [`experiments/README.md`](experiments/README.md) - experiment map
 - [`experiments/catalog.md`](experiments/catalog.md) - compact evidence catalog

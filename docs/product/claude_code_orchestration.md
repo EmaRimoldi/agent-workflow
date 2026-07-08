@@ -57,11 +57,15 @@ The repository includes:
 
 ```bash
 uv sync --dev
+uv run agent-workflow demo
 uv run agent-workflow doctor
 uv run agent-workflow parallel --help
 uv run agent-workflow parallel-shared --help
 uv run agent-workflow swarm --help
 ```
+
+`agent-workflow demo` is an offline fixture. It previews the evidence bundle
+shape before a user spends Claude Code quota or evaluator compute.
 
 For live tests, use fixed-step settings:
 
