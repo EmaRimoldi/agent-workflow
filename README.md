@@ -1,22 +1,67 @@
 # Agent Workflow
 
-Agent Workflow tells teams whether a more complex AI-agent workflow is worth the
-extra cost.
+Agent Workflow is an open-source harness for designing and scoring Claude Code
+agent workflows before you trust them with expensive work.
 
-It gives Claude Code a reproducible way to spawn isolated sub-agents, run the
-same task in parallel, and compare whether memory, swarm coordination, or merge
-synthesis actually improved the result.
+Define one agent or N agents, choose their models, roles, memory mode, and
+CPU/GPU assignment, then run the same task through single-agent, parallel,
+shared-memory, swarm, or merge workflows. The framework runs locally; live agent
+capacity depends on your Claude Code subscription, provider quota, and available
+compute.
 
 ![Agent Workflow experiment map](docs/assets/experiments/experiment-map.png)
 
 ## Why It Matters
 
-AI-agent teams often add parallelism, memory, or swarm coordination before they
-know whether those features improve results. Agent Workflow gives them a way to
-measure that tradeoff before trusting agents with expensive or long-running work.
+AI-agent teams can now spawn more workers easily. The harder question is whether
+more agents, shared memory, or coordination actually improves the result. Agent
+Workflow measures that tradeoff with isolated workspaces, fixed evaluation
+budgets, run logs, snapshots, and comparable metrics.
 
 The built-in benchmark is `autoresearch/`: agents edit a CIFAR-10 `train.py`,
 run evaluations, and try to reduce `val_bpb` validation loss. Lower is better.
+
+## Build Your Own Agent Team
+
+Use the compact CLI when every worker should be similar:
+
+```bash
+uv run agent-workflow parallel \
+  --n-agents 4 \
+  --model claude-haiku-4-5-20251001 \
+  --cuda-devices 0,1,2,3 \
+  --train-max-steps 1170 \
+  --serialized-evaluator \
+  --experiment-id four_agent_smoke
+```
+
+Use a roster config when agents should have different roles:
+
+```yaml
+agents:
+  use_shared_memory: true
+  roster:
+    - id: explorer
+      role: broad architecture and hyperparameter search
+      model: claude-sonnet-4-6
+      temperature: 1.2  # search-style directive; Claude CLI has no native temperature flag
+      cuda_device: "0"
+    - id: optimizer
+      role: conservative refinement of the best known candidate
+      model: claude-haiku-4-5-20251001
+      temperature: 0.3  # lower values ask the agent to make smaller edits
+      cuda_device: "1"
+```
+
+Run it with:
+
+```bash
+uv run agent-workflow parallel-shared --config configs/agent_roster_example.yaml
+```
+
+`N` is intentionally not hardcoded. You can test as many agents as your
+subscription, provider rate limits, evaluator concurrency, and local CPU/GPU
+resources can support.
 
 ## Current Signal
 
@@ -72,6 +117,8 @@ Live agent runs require Claude Code authentication and a clean workspace. See
 ## What Is Included
 
 - A runnable `agent-workflow` CLI.
+- Configurable agent rosters for custom roles, models, temperatures, and device
+  assignment.
 - Claude Code project instructions, sub-agent templates, and a preflight
   `doctor` command.
 - The controlled `autoresearch/` benchmark task.

@@ -165,6 +165,20 @@ uv run agent-workflow parallel-shared \
   --experiment-id smoke_parallel_shared
 ```
 
+For a custom roster with different roles, models, temperatures, and devices:
+
+```bash
+uv run agent-workflow parallel-shared \
+  --config configs/agent_roster_example.yaml \
+  --train-max-steps 1170 \
+  --serialized-evaluator \
+  --experiment-id smoke_custom_roster
+```
+
+The config file controls `agents.roster`. Each entry becomes one Claude Code
+worker. The maximum useful `N` depends on Claude Code/account limits, provider
+rate limits, evaluator concurrency, and available local CPU/GPU capacity.
+
 The swarm command currently has a separate surface:
 
 ```bash

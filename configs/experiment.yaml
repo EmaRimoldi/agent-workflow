@@ -1,21 +1,24 @@
 # ─────────────────────────────────────────────────────────────────
 #  Experiment Configuration
-#  Pass to launcher with: python scripts/run_parallel_experiment.py --config configs/experiment.yaml
+#  Pass to launcher with: uv run agent-workflow parallel --config configs/experiment.yaml
 # ─────────────────────────────────────────────────────────────────
 
 experiment:
   # Unique identifier for this run. null = auto-generate timestamp-based ID.
   id: null
-  # Execution mode: parallel | single_long
-  #   parallel    — N independent agents running simultaneously
-  #   single_long — 1 agent with 2× the time budget
+  # Execution mode: parallel | parallel_shared | single_long | single_memory
+  #   parallel        — N isolated agents running simultaneously
+  #   parallel_shared — N agents running simultaneously with a shared result log
+  #   single_long     — 1 agent with the configured wall-clock budget
+  #   single_memory   — 1 agent with external memory enabled
   mode: parallel
   # Directory under which run outputs are written (relative to repo root).
   runs_dir: runs
 
 # ── Agent settings ────────────────────────────────────────────────
 agents:
-  # Number of parallel agents (ignored in single_long mode).
+  # Compact mode: spawn N agents with the same default settings.
+  # Ignored when agents.roster is non-empty.
   n: 3
 
   # Claude model used for every sub-agent.
@@ -56,6 +59,23 @@ agents:
   #     temperature: null       # default
   #   - agent_id: agent_2
   #     temperature: 0.3        # conservative
+
+  # Roster mode: explicitly design each agent.
+  # When this list is non-empty it replaces n and overrides.
+  # Use this when you want different roles, models, temperatures, or devices.
+  roster: []
+  # Example:
+  # roster:
+  #   - id: explorer
+  #     role: broad architecture and hyperparameter search
+  #     model: claude-sonnet-4-6
+  #     temperature: 1.2
+  #     cuda_device: "0"
+  #   - id: optimizer
+  #     role: conservative refinement of the best known candidate
+  #     model: claude-haiku-4-5-20251001
+  #     temperature: 0.3
+  #     cuda_device: "1"
 
 # ── SLURM settings ────────────────────────────────────────────────
 slurm:

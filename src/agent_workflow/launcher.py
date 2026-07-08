@@ -71,39 +71,108 @@ def _coerce_config_for_mode(
 
     if mode in {"single_long", "single_memory"}:
         config.mode = mode
+        source = config.agents[0] if config.agents else prompt
         config.agents = [
             AgentConfig(
-                agent_id="agent_0",
-                time_budget_minutes=config.base_time_budget_minutes,
-                train_time_budget_seconds=config.train_time_budget_seconds,
-                train_max_steps=config.train_max_steps,
-                cuda_device=prompt.cuda_device,
-                model=prompt.model,
-                temperature=prompt.temperature,
-                use_external_memory=(mode == "single_memory"),
+                agent_id=source.agent_id,
+                role=source.role,
+                time_budget_minutes=source.time_budget_minutes,
+                train_time_budget_seconds=source.train_time_budget_seconds,
+                train_max_steps=source.train_max_steps,
+                cuda_device=source.cuda_device,
+                model=source.model,
+                temperature=source.temperature,
+                use_external_memory=(source.use_external_memory or mode == "single_memory"),
                 use_shared_memory=False,
+                system_prompt_file=source.system_prompt_file,
+                first_message_file=source.first_message_file,
             )
         ]
         return config
 
     desired_n = n_agents or max(len(config.agents), 2)
-    existing_devices = [agent.cuda_device for agent in config.agents] or [prompt.cuda_device]
+    if desired_n < 1:
+        raise ValueError("--n-agents must be at least 1")
+    existing = list(config.agents)
+    if not existing:
+        existing = [prompt]
     config.mode = mode
-    config.agents = [
-        AgentConfig(
-            agent_id=f"agent_{index}",
-            time_budget_minutes=config.base_time_budget_minutes,
-            train_time_budget_seconds=config.train_time_budget_seconds,
-            train_max_steps=config.train_max_steps,
-            cuda_device=existing_devices[index] if index < len(existing_devices) else str(index),
-            model=prompt.model,
-            temperature=prompt.temperature,
-            use_external_memory=False,
-            use_shared_memory=(mode == "parallel_shared"),
+    agents: list[AgentConfig] = []
+    for index in range(desired_n):
+        source = existing[index] if index < len(existing) else prompt
+        agents.append(
+            AgentConfig(
+                agent_id=source.agent_id if index < len(existing) else f"agent_{index}",
+                role=source.role,
+                time_budget_minutes=source.time_budget_minutes,
+                train_time_budget_seconds=source.train_time_budget_seconds,
+                train_max_steps=source.train_max_steps,
+                cuda_device=source.cuda_device if index < len(existing) else str(index),
+                model=source.model,
+                temperature=source.temperature,
+                use_external_memory=source.use_external_memory,
+                use_shared_memory=(mode == "parallel_shared"),
+                system_prompt_file=source.system_prompt_file,
+                first_message_file=source.first_message_file,
+            )
         )
-        for index in range(desired_n)
-    ]
+    config.agents = agents
     return config
+
+
+def _parse_csv(value: str | None) -> list[str] | None:
+    if value is None:
+        return None
+    items = [item.strip() for item in value.split(",") if item.strip()]
+    return items or None
+
+
+def _add_agent_selection_args(parser: argparse.ArgumentParser, include_n: bool) -> None:
+    if include_n:
+        parser.add_argument(
+            "--n-agents",
+            type=int,
+            default=None,
+            help="Number of parallel agents to spawn.",
+        )
+    parser.add_argument(
+        "--model",
+        type=str,
+        default=None,
+        help="Claude model for every agent; overrides config and roster models when set.",
+    )
+    parser.add_argument(
+        "--cuda-devices",
+        type=str,
+        default=None,
+        help="Comma-separated CUDA devices assigned by agent order, e.g. 0,1,2.",
+    )
+
+
+def _apply_budget_args(config: ExperimentConfig, args) -> None:
+    if getattr(args, "time_budget", None) is not None:
+        config.base_time_budget_minutes = args.time_budget
+        for agent in config.agents:
+            agent.time_budget_minutes = args.time_budget
+    if getattr(args, "train_budget", None) is not None:
+        config.train_time_budget_seconds = args.train_budget
+        for agent in config.agents:
+            agent.train_time_budget_seconds = args.train_budget
+
+
+def _apply_agent_selection_args(config: ExperimentConfig, args) -> None:
+    if getattr(args, "model", None):
+        for agent in config.agents:
+            agent.model = args.model
+    devices = _parse_csv(getattr(args, "cuda_devices", None))
+    if devices is not None:
+        if len(devices) < len(config.agents):
+            raise ValueError(
+                f"--cuda-devices requires at least {len(config.agents)} entries "
+                f"for this run (got {len(devices)})"
+            )
+        for index, agent in enumerate(config.agents):
+            agent.cuda_device = devices[index]
 
 
 def _add_reviewer_grade_args(parser: argparse.ArgumentParser) -> None:
@@ -171,7 +240,7 @@ def main_parallel(argv=None) -> None:
                         help="Path to experiment.yaml. Command-line flags override it when provided.")
     parser.add_argument("--time-budget", type=int, default=None, help="Budget per agent (minutes)")
     parser.add_argument("--train-budget", type=int, default=None, help="Budget per training run (seconds)")
-    parser.add_argument("--n-agents", type=int, default=None, help="Number of parallel agents")
+    _add_agent_selection_args(parser, include_n=True)
     parser.add_argument("--experiment-id", type=str, default=None)
     parser.add_argument("--runs-dir", type=str, default="runs")
     _add_reviewer_grade_args(parser)
@@ -196,8 +265,12 @@ def main_parallel(argv=None) -> None:
             time_budget_minutes=args.time_budget or 30,
             train_time_budget_seconds=args.train_budget or 300,
             repo_root=str(repo_root),
+            cuda_devices=_parse_csv(args.cuda_devices),
             train_max_steps=args.train_max_steps,
         )
+    if args.config:
+        _apply_budget_args(config, args)
+    _apply_agent_selection_args(config, args)
     _apply_reviewer_grade_args(config, args)
 
     runs_dir = repo_root / (args.runs_dir if not args.config else "runs")
@@ -228,7 +301,7 @@ def main_parallel_shared(argv=None) -> None:
                         help="Path to experiment.yaml. Command-line flags override it when provided.")
     parser.add_argument("--time-budget", type=int, default=None, help="Budget per agent (minutes)")
     parser.add_argument("--train-budget", type=int, default=None, help="Budget per training run (seconds)")
-    parser.add_argument("--n-agents", type=int, default=None, help="Number of parallel agents")
+    _add_agent_selection_args(parser, include_n=True)
     parser.add_argument("--experiment-id", type=str, default=None)
     parser.add_argument("--runs-dir", type=str, default="runs")
     _add_reviewer_grade_args(parser)
@@ -253,11 +326,15 @@ def main_parallel_shared(argv=None) -> None:
             time_budget_minutes=args.time_budget or 30,
             train_time_budget_seconds=args.train_budget or 300,
             repo_root=str(repo_root),
+            cuda_devices=_parse_csv(args.cuda_devices),
             train_max_steps=args.train_max_steps,
         )
         config.mode = "parallel_shared"
         for agent in config.agents:
             agent.use_shared_memory = True
+    if args.config:
+        _apply_budget_args(config, args)
+    _apply_agent_selection_args(config, args)
     _apply_reviewer_grade_args(config, args)
 
     runs_dir = repo_root / (args.runs_dir if not args.config else "runs")
@@ -288,6 +365,7 @@ def main_single_long(argv=None) -> None:
                         help="Path to experiment.yaml. Command-line flags override it when provided.")
     parser.add_argument("--time-budget", type=int, default=None, help="Agent wall-clock budget (minutes)")
     parser.add_argument("--train-budget", type=int, default=None, help="Budget per training run (seconds)")
+    _add_agent_selection_args(parser, include_n=False)
     parser.add_argument("--experiment-id", type=str, default=None)
     parser.add_argument("--runs-dir", type=str, default="runs")
     _add_reviewer_grade_args(parser)
@@ -313,6 +391,9 @@ def main_single_long(argv=None) -> None:
             repo_root=str(repo_root),
             train_max_steps=args.train_max_steps,
         )
+    if args.config:
+        _apply_budget_args(config, args)
+    _apply_agent_selection_args(config, args)
     _apply_reviewer_grade_args(config, args)
 
     runs_dir = repo_root / (args.runs_dir if not args.config else "runs")
@@ -341,6 +422,7 @@ def main_single_memory(argv=None) -> None:
                         help="Path to experiment.yaml. Command-line flags override it when provided.")
     parser.add_argument("--time-budget", type=int, default=None, help="Agent wall-clock budget (minutes)")
     parser.add_argument("--train-budget", type=int, default=None, help="Budget per training run (seconds)")
+    _add_agent_selection_args(parser, include_n=False)
     parser.add_argument("--experiment-id", type=str, default=None)
     parser.add_argument("--runs-dir", type=str, default="runs")
     _add_reviewer_grade_args(parser)
@@ -366,6 +448,9 @@ def main_single_memory(argv=None) -> None:
             repo_root=str(repo_root),
             train_max_steps=args.train_max_steps,
         )
+    if args.config:
+        _apply_budget_args(config, args)
+    _apply_agent_selection_args(config, args)
     _apply_reviewer_grade_args(config, args)
 
     runs_dir = repo_root / (args.runs_dir if not args.config else "runs")

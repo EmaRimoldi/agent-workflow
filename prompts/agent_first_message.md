@@ -1,4 +1,5 @@
 Research task for AGENT_ID={{AGENT_ID}} in RUN_ID={{RUN_ID}} (experiment: {{EXPERIMENT_ID}}).
+Assigned role: {{AGENT_ROLE}}.
 
 Setup is already complete:
 - You are already on branch: {{BRANCH}}

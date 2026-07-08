@@ -545,6 +545,7 @@ def _render_first_message(
     return (
         prompt
         .replace("{{AGENT_ID}}", agent_config.agent_id)
+        .replace("{{AGENT_ROLE}}", agent_config.role or "general search agent")
         .replace("{{RUN_ID}}", run_id)
         .replace("{{EXPERIMENT_ID}}", experiment_id)
         .replace("{{TIME_BUDGET}}", str(agent_config.time_budget_minutes))

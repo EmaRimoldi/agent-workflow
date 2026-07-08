@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from pathlib import Path
@@ -13,6 +14,7 @@ from typing import Optional
 class AgentConfig:
     """Per-agent configuration."""
     agent_id: str
+    role: str = ""
     time_budget_minutes: int = 30
     train_time_budget_seconds: int = 300
     train_max_steps: Optional[int] = None
@@ -124,6 +126,8 @@ class ExperimentConfig:
         For SLURM-based training this device assignment controls CUDA_VISIBLE_DEVICES
         within each agent's environment.
         """
+        if n_agents < 1:
+            raise ValueError("n_agents must be at least 1")
         if cuda_devices is None:
             cuda_devices = [str(i) for i in range(n_agents)]
         if len(cuda_devices) < n_agents:
@@ -221,18 +225,32 @@ class ExperimentConfig:
             ag.get("train_max_steps", eval_.get("train_max_steps"))
         )
         n_agents = int(ag.get("n", 2))
+        if n_agents < 1:
+            raise ValueError("agents.n must be at least 1")
         model    = ag.get("model", "claude-haiku-4-5-20251001")
         temp     = ag.get("temperature", None)
         use_external_memory = bool(ag.get("use_external_memory", False))
         use_shared_memory = bool(ag.get("use_shared_memory", False))
         devices  = ag.get("cuda_devices", None)
+        roster = ag.get("roster", None)
+        if roster == []:
+            roster = None
         overrides: dict[str, dict] = {
             o["agent_id"]: o for o in ag.get("overrides", []) if "agent_id" in o
         }
 
+        if roster is not None:
+            if not isinstance(roster, list) or not roster:
+                raise ValueError("agents.roster must be a non-empty list when provided")
+            n_agents = len(roster)
         if devices is None:
             devices = [str(i) for i in range(n_agents)]
         devices = [str(d) for d in devices]
+        if len(devices) < n_agents:
+            raise ValueError(
+                f"agents.cuda_devices must contain at least {n_agents} entries "
+                f"when provided (got {len(devices)})"
+            )
 
         experiment_id = exp.get("id") or f"exp_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         evaluator_concurrency = str(eval_.get("concurrency", "parallel"))
@@ -242,12 +260,37 @@ class ExperimentConfig:
                 f"(got {evaluator_concurrency!r})"
             )
 
-        # Build per-agent configs, applying any overrides
-        if mode in {"single_long", "single_memory"}:
+        # Build per-agent configs, applying explicit roster entries first, then
+        # lightweight overrides for the compact n-agent schema.
+        if roster is not None:
+            agent_list = [
+                _agent_from_roster_entry(
+                    entry=entry,
+                    index=index,
+                    default_time_budget=budget,
+                    default_train_seconds=train_s,
+                    default_train_max_steps=train_max_steps,
+                    default_cuda_device=devices[index],
+                    default_model=model,
+                    default_temperature=temp,
+                    default_external_memory=use_external_memory,
+                    default_shared_memory=use_shared_memory,
+                )
+                for index, entry in enumerate(roster)
+            ]
+            if mode in {"single_long", "single_memory"}:
+                first_agent = agent_list[0]
+                first_agent.use_external_memory = (
+                    first_agent.use_external_memory or mode == "single_memory"
+                )
+                first_agent.use_shared_memory = False
+                agent_list = [first_agent]
+        elif mode in {"single_long", "single_memory"}:
             single_agent_overrides = overrides.get("agent_0", {})
             agent_list = [
                 AgentConfig(
                     agent_id="agent_0",
+                    role=single_agent_overrides.get("role", ""),
                     time_budget_minutes=budget,
                     train_time_budget_seconds=train_s,
                     train_max_steps=_optional_int(
@@ -274,6 +317,7 @@ class ExperimentConfig:
                 ov  = overrides.get(aid, {})
                 agent_list.append(AgentConfig(
                     agent_id=aid,
+                    role=ov.get("role", ""),
                     time_budget_minutes=int(ov.get("time_budget_minutes", budget)),
                     train_time_budget_seconds=int(ov.get("train_time_budget_seconds", train_s)),
                     train_max_steps=_optional_int(ov.get("train_max_steps", train_max_steps)),
@@ -320,3 +364,45 @@ def _optional_float(value) -> Optional[float]:
     if value in (None, "", "null"):
         return None
     return float(value)
+
+
+def _agent_from_roster_entry(
+    entry: dict,
+    index: int,
+    default_time_budget: int,
+    default_train_seconds: int,
+    default_train_max_steps: Optional[int],
+    default_cuda_device: str,
+    default_model: str,
+    default_temperature: Optional[float],
+    default_external_memory: bool,
+    default_shared_memory: bool,
+) -> AgentConfig:
+    if not isinstance(entry, dict):
+        raise ValueError("Each agents.roster entry must be a mapping")
+    agent_id = str(entry.get("agent_id", entry.get("id", f"agent_{index}")))
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", agent_id):
+        raise ValueError(
+            "agents.roster agent ids may only contain letters, numbers, "
+            f"underscore, and dash (got {agent_id!r})"
+        )
+    return AgentConfig(
+        agent_id=agent_id,
+        role=str(entry.get("role", "")),
+        time_budget_minutes=int(entry.get("time_budget_minutes", default_time_budget)),
+        train_time_budget_seconds=int(
+            entry.get("train_time_budget_seconds", default_train_seconds)
+        ),
+        train_max_steps=_optional_int(
+            entry.get("train_max_steps", default_train_max_steps)
+        ),
+        cuda_device=str(entry.get("cuda_device", default_cuda_device)),
+        model=entry.get("model", default_model),
+        temperature=entry.get("temperature", default_temperature),
+        use_external_memory=bool(
+            entry.get("use_external_memory", default_external_memory)
+        ),
+        use_shared_memory=bool(entry.get("use_shared_memory", default_shared_memory)),
+        system_prompt_file=entry.get("system_prompt", "prompts/agent_system_prompt.md"),
+        first_message_file=entry.get("first_message", "prompts/agent_first_message.md"),
+    )
