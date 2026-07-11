@@ -7,6 +7,7 @@ from pathlib import Path
 
 import torch.nn as nn
 from PIL import Image, ImageDraw, ImageFont
+from visualtorch import Input
 from visualtorch.flow import flow_view
 
 
@@ -36,6 +37,30 @@ WORKLOADS = [
         "module": resnet_micro,
     },
 ]
+
+DARK_BG = (6, 10, 28)
+PANEL_BG = (9, 16, 42)
+TEXT = (232, 241, 255)
+MUTED = (141, 162, 198)
+GRID = (27, 244, 255, 34)
+ACCENT_CYAN = "#18F4FF"
+ACCENT_MAGENTA = "#FF2DAA"
+ACCENT_VIOLET = "#9B5CFF"
+ACCENT_GREEN = "#20FF9F"
+ACCENT_ORANGE = "#FF9D2E"
+ACCENT_YELLOW = "#FFE66D"
+
+NEON_COLOR_MAP = {
+    Input: {"fill": "#FF4D6D", "outline": "#FFD0D9"},
+    nn.Conv2d: {"fill": ACCENT_CYAN, "outline": "#B7FBFF"},
+    nn.Linear: {"fill": ACCENT_MAGENTA, "outline": "#FFC2E7"},
+    nn.ReLU: {"fill": ACCENT_YELLOW, "outline": "#FFF7AE"},
+    nn.GELU: {"fill": ACCENT_VIOLET, "outline": "#D8C6FF"},
+    nn.Flatten: {"fill": ACCENT_ORANGE, "outline": "#FFD5A6"},
+    nn.MaxPool2d: {"fill": ACCENT_GREEN, "outline": "#B9FFD9"},
+    nn.AdaptiveAvgPool2d: {"fill": "#35D5FF", "outline": "#BDEFFF"},
+    nn.Identity: {"fill": "#00E676", "outline": "#B8FFCD"},
+}
 
 
 def font(size: int, *, bold: bool = False) -> ImageFont.ImageFont:
@@ -67,9 +92,13 @@ def render_workload(module: object) -> Image.Image:
         min_z=12,
         max_z=130,
         type_ignore=[nn.BatchNorm1d, nn.BatchNorm2d, nn.Dropout, nn.Dropout2d],
-        palette="tol_muted",
-        background_fill="white",
+        color_map=NEON_COLOR_MAP,
+        palette="dracula",
+        background_fill=DARK_BG,
         legend=True,
+        font_color=TEXT,
+        opacity=238,
+        shade_step=18,
     )
     return image.convert("RGB")
 
@@ -77,14 +106,22 @@ def render_workload(module: object) -> Image.Image:
 def label_panel(title: str, subtitle: str, architecture: Image.Image, width: int) -> Image.Image:
     title_font = font(32, bold=True)
     subtitle_font = font(22)
-    label_height = 92
-    panel = Image.new("RGB", (width, label_height + architecture.height), "white")
+    label_height = 96
+    panel = Image.new("RGB", (width, label_height + architecture.height + 20), DARK_BG)
     draw = ImageDraw.Draw(panel)
-    draw.text((22, 14), title, fill=(17, 24, 39), font=title_font)
-    draw.text((22, 54), subtitle, fill=(100, 116, 139), font=subtitle_font)
+    draw.rounded_rectangle((12, 4, width - 12, panel.height - 8), radius=24, outline=(24, 244, 255), width=2, fill=PANEL_BG)
+    draw.text((34, 20), title, fill=TEXT, font=title_font)
+    draw.text((34, 60), subtitle, fill=MUTED, font=subtitle_font)
     x = (width - architecture.width) // 2
     panel.paste(architecture, (x, label_height))
     return panel
+
+
+def add_background_grid(draw: ImageDraw.ImageDraw, width: int, height: int) -> None:
+    for x in range(0, width, 96):
+        draw.line((x, 0, x, height), fill=GRID, width=1)
+    for y in range(0, height, 96):
+        draw.line((0, y, width, y), fill=GRID, width=1)
 
 
 def main() -> None:
@@ -92,27 +129,28 @@ def main() -> None:
     rendered: list[Image.Image] = []
     for workload in WORKLOADS:
         image = render_workload(workload["module"])
-        image = image.resize((image.width * 2, image.height * 2), Image.Resampling.LANCZOS)
+        image = image.resize((image.width * 3, image.height * 3), Image.Resampling.LANCZOS)
         rendered.append(image)
         image.save(OUT / f"visualtorch-{workload['title'].lower().replace(' ', '-')}.png")
 
-    width = max(image.width for image in rendered) + 80
+    width = max(image.width for image in rendered) + 120
     panels = [
         label_panel(workload["title"], workload["subtitle"], image, width)
         for workload, image in zip(WORKLOADS, rendered)
     ]
-    title_font = font(42, bold=True)
-    subtitle_font = font(24)
-    header_height = 112
-    gap = 24
-    total_height = header_height + sum(panel.height for panel in panels) + gap * (len(panels) - 1) + 36
-    canvas = Image.new("RGB", (width, total_height), "white")
+    title_font = font(56, bold=True)
+    subtitle_font = font(28)
+    header_height = 146
+    gap = 28
+    total_height = header_height + sum(panel.height for panel in panels) + gap * (len(panels) - 1) + 44
+    canvas = Image.new("RGB", (width, total_height), DARK_BG)
     draw = ImageDraw.Draw(canvas)
-    draw.text((24, 20), "AutoResearch neural substrates", fill=(17, 24, 39), font=title_font)
+    add_background_grid(draw, width, total_height)
+    draw.text((34, 26), "AutoResearch neural substrates", fill=TEXT, font=title_font)
     draw.text(
-        (24, 72),
+        (36, 92),
         "VisualTorch renderings of the small CIFAR-10 networks agents edit during the experiment.",
-        fill=(100, 116, 139),
+        fill=MUTED,
         font=subtitle_font,
     )
     y = header_height

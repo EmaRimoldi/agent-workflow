@@ -6,32 +6,28 @@
   <title>AutoResearch Mini-Network Explorer</title>
   <style>
     :root {
-      color-scheme: light dark;
-      --bg: #f8fafc;
-      --fg: #111827;
-      --muted: #64748b;
-      --line: #cbd5e1;
-      --soft: #e2e8f0;
-      --card: #ffffff;
-      --blue: #2563eb;
-      --green: #16a34a;
-      --purple: #7c3aed;
-      --orange: #f97316;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #0b1220;
-        --fg: #e5e7eb;
-        --muted: #94a3b8;
-        --line: #334155;
-        --soft: #1e293b;
-        --card: #111827;
-      }
+      color-scheme: dark;
+      --bg: #060a1c;
+      --fg: #e8f1ff;
+      --muted: #8da2c6;
+      --line: #18f4ff;
+      --soft: #142448;
+      --card: #09102a;
+      --cyan: #18f4ff;
+      --magenta: #ff2daa;
+      --violet: #9b5cff;
+      --green: #20ff9f;
     }
     body {
       margin: 0;
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg);
+      background:
+        linear-gradient(rgba(24, 244, 255, 0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(24, 244, 255, 0.12) 1px, transparent 1px),
+        radial-gradient(circle at 10% 0%, rgba(155, 92, 255, 0.18), transparent 36%),
+        radial-gradient(circle at 88% 12%, rgba(255, 45, 170, 0.16), transparent 34%),
+        var(--bg);
+      background-size: 64px 64px, 64px 64px, auto, auto, auto;
       color: var(--fg);
     }
     main {
@@ -66,9 +62,9 @@
       cursor: pointer;
     }
     button[aria-pressed="true"] {
-      background: var(--fg);
-      color: var(--bg);
-      border-color: var(--fg);
+      background: var(--line);
+      color: #020617;
+      border-color: var(--line);
     }
     .layout {
       display: grid;
@@ -81,6 +77,7 @@
       border: 1px solid var(--line);
       border-radius: 10px;
       padding: 16px;
+      box-shadow: 0 0 0 1px rgba(24, 244, 255, 0.18), 0 0 32px rgba(24, 244, 255, 0.08);
     }
     .stats {
       display: grid;
@@ -107,7 +104,7 @@
       display: block;
     }
     .node rect {
-      fill: color-mix(in srgb, var(--accent) 12%, var(--card));
+      fill: color-mix(in srgb, var(--accent) 26%, var(--card));
       stroke: var(--accent);
       stroke-width: 2;
       rx: 12;
@@ -121,7 +118,7 @@
       font-size: 13px;
     }
     .edge {
-      stroke: var(--line);
+      stroke: color-mix(in srgb, var(--accent) 55%, var(--line));
       stroke-width: 2.2;
       fill: none;
       marker-end: url(#arrow);
@@ -129,6 +126,7 @@
     .signal {
       fill: var(--accent);
       opacity: 0.95;
+      filter: drop-shadow(0 0 8px var(--accent));
     }
     .skip {
       stroke: var(--accent);
@@ -150,7 +148,7 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       padding: 9px 10px;
-      background: transparent;
+      background: rgba(24, 244, 255, 0.04);
     }
     .layer strong {
       display: block;
@@ -225,7 +223,7 @@
     const models = {
       mlp: {
         title: "MLP",
-        accent: "#7c3aed",
+        accent: "#9b5cff",
         params: "~669k",
         text: "Flattened CIFAR-10 image followed by two dense hidden layers. It is parameter-heavy relative to the CNNs because the first linear layer sees every pixel.",
         nodes: [
@@ -244,7 +242,7 @@
       },
       cnn: {
         title: "Compact CNN",
-        accent: "#2563eb",
+        accent: "#18f4ff",
         params: "~77k",
         text: "Two convolutional blocks compress spatial structure before a small dense classifier. This is the most conventional CIFAR-10 baseline in the set.",
         nodes: [
@@ -263,7 +261,7 @@
       },
       resnet: {
         title: "Micro ResNet",
-        accent: "#16a34a",
+        accent: "#20ff9f",
         params: "~2.6k",
         text: "A very small residual CNN. The skip connection makes it visually distinct and gives agents a different edit substrate.",
         nodes: [
